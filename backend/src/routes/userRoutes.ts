@@ -5,7 +5,9 @@ import {
   getAllUsersController,
   updateUserController,
   deleteUserController,
+  loginUserController,
 } from '../controllers/userController';
+import { authenticateUser } from '../middleware/authMiddleware';
 
 const userRouter = Router();
 
@@ -18,7 +20,7 @@ const userRouter = Router();
 
 /**
  * @swagger
- * /api/users:
+ * /api/users/register:
  *   post:
  *     summary: Create a new user
  *     tags: [Users]
@@ -53,7 +55,51 @@ const userRouter = Router();
  *       500:
  *         description: Server error.
  */
-userRouter.post('/', createUserController);
+userRouter.post('/register', createUserController);
+
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: User login
+ *     tags: [Users]
+ *     requestBody:
+ *       description: User credentials for authentication
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "john@example.com"
+ *               password:
+ *                 type: string
+ *                 example: "secretpassword"
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Login successful. Returns a JWT token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful."
+ *                 token:
+ *                   type: string
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *       400:
+ *         description: Invalid credentials (user not found or incorrect password).
+ *       500:
+ *         description: Server error.
+ */
+userRouter.post('/login', loginUserController);
 
 /**
  * @swagger
@@ -73,7 +119,7 @@ userRouter.post('/', createUserController);
  *       500:
  *         description: Server error.
  */
-userRouter.get('/', getAllUsersController);
+userRouter.get('/',getAllUsersController);
 
 /**
  * @swagger
@@ -100,7 +146,7 @@ userRouter.get('/', getAllUsersController);
  *       500:
  *         description: Server error.
  */
-userRouter.get('/:id', getUserController);
+userRouter.get('/:id',authenticateUser,getUserController);
 
 /**
  * @swagger
@@ -144,7 +190,7 @@ userRouter.get('/:id', getUserController);
  *       500:
  *         description: Server error.
  */
-userRouter.put('/:id', updateUserController);
+userRouter.put('/:id',authenticateUser,updateUserController);
 
 /**
  * @swagger
@@ -167,6 +213,7 @@ userRouter.put('/:id', updateUserController);
  *       500:
  *         description: Server error.
  */
-userRouter.delete('/:id', deleteUserController);
+userRouter.delete('/:id',authenticateUser,deleteUserController);
+
 
 export default userRouter;

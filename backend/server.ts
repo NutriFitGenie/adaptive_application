@@ -5,11 +5,12 @@ import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
 import userRoutes from './src/routes/userRoutes';
 import { swaggerUi, swaggerSpec } from './swagger';
+import config from './src/config/env.config';
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = config.PORT;
 
 // Middleware
 app.use(cors());

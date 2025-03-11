@@ -24,6 +24,11 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
   return await User.findById(id);
 };
 
+
+export const getUserByEmail = async (email: string): Promise<IUser | null> => {
+  return await User.findOne({ email });
+};
+
 /**
  * Retrieve all users from the database.
  * @returns An array of user documents.

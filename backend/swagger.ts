@@ -7,7 +7,7 @@ const options = {
     info: {
       title: 'My API',
       version: '1.0.0',
-      description: 'A simple Express API',
+      description: 'A simple Express API with authentication',
     },
     servers: [
       {
@@ -15,6 +15,14 @@ const options = {
       },
     ],
     components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your token in the format: Bearer <token>',
+        },
+      },
       schemas: {
         User: {
           type: 'object',
@@ -46,8 +54,22 @@ const options = {
             },
           },
         },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            message: {
+              type: 'string',
+              example: 'Login successful.',
+            },
+            token: {
+              type: 'string',
+              example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+            },
+          },
+        },
       },
     },
+    security: [{ bearerAuth: [] }], // Apply globally
   },
   apis: ['./src/routes/*.ts'], // Path where annotations are written
 };
