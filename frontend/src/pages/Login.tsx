@@ -1,18 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-// Define types for Form Values
 interface LoginFormValues {
   email: string;
   password: string;
 }
 
-const Login: React.FC = () => {
+// Props from parent
+interface LoginProps {
+  onViewChange: (view: "login" | "register" | "dashboard") => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const initialValues: LoginFormValues = {
     email: "",
@@ -28,12 +30,15 @@ const Login: React.FC = () => {
     try {
       const response = await axios.post("http://localhost:3000/api/users/login", values);
       console.log("Login Successful:", response.data);
-      
-      // Store JWT token
-      localStorage.setItem("token", response.data.token);
 
-      // Redirect to dashboard
-      navigate("/dashboard");
+      // Example response: { message: 'Login successful.', token: '...', user: {...} }
+
+      // 1. Store JWT token in localStorage
+      localStorage.setItem("token", response.data.token); 
+
+
+      // 3. Navigate to the dashboard
+      onViewChange("dashboard");
     } catch (err) {
       setError("Invalid email or password.");
     }
@@ -43,6 +48,7 @@ const Login: React.FC = () => {
     <div>
       <h2>Login</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
         {() => (
           <Form>
@@ -60,7 +66,13 @@ const Login: React.FC = () => {
           </Form>
         )}
       </Formik>
-      <p>Don't have an account? <a href="/register">Register</a></p>
+
+      <p>
+        Don&apos;t have an account?{" "}
+        <button onClick={() => onViewChange("register")} style={{ cursor: "pointer" }}>
+          Register
+        </button>
+      </p>
     </div>
   );
 };
