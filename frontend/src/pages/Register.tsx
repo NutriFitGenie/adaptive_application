@@ -1,19 +1,21 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-// Define types for Form Values
 interface RegisterFormValues {
   username: string;
   email: string;
   password: string;
 }
 
-const Register: React.FC = () => {
+interface RegisterProps {
+  // Function passed from parent (e.g., App) to change the view
+  onViewChange: (view: "login" | "register" | "dashboard") => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const initialValues: RegisterFormValues = {
     username: "",
@@ -29,9 +31,12 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (values: RegisterFormValues) => {
     try {
+      // .env
       const response = await axios.post("http://localhost:3000/api/users/register", values);
       console.log("Registration Successful:", response.data);
-      navigate("/login"); // Redirect to login page
+
+      // After successful registration, navigate to "login" view
+      onViewChange("login");
     } catch (err) {
       setError("Registration failed. Please try again.");
     }
@@ -41,6 +46,7 @@ const Register: React.FC = () => {
     <div>
       <h2>Register</h2>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
       <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
         {() => (
           <Form>
@@ -63,7 +69,13 @@ const Register: React.FC = () => {
           </Form>
         )}
       </Formik>
-      <p>Already have an account? <a href="/login">Login</a></p>
+
+      <p>
+        Already have an account?{" "}
+        <button type="button" onClick={() => onViewChange("login")}>
+          Login
+        </button>
+      </p>
     </div>
   );
 };

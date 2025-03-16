@@ -1,15 +1,35 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+
+// A simple union type listing valid view strings:
+type View = "login" | "register" | "dashboard";
 
 const App: React.FC = () => {
+  const [view, setView] = useState<View>("login");
+
+  useEffect(() => {
+    // Check localStorage on first render to see if a token exists
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Optionally validate token on the server or decode it here
+      setView("dashboard");
+    }
+  }, []);
+
+  // This function is passed to child components so they can change the "view."
+  const handleViewChange = (nextView: View) => {
+    setView(nextView);
+  };
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </Router>
+    <div>
+      {/* Render only one of these at a time based on the current 'view' */}
+      {view === "login" && <Login onViewChange={handleViewChange} />}
+      {view === "register" && <Register onViewChange={handleViewChange} />}
+      {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}
+    </div>
   );
 };
 
