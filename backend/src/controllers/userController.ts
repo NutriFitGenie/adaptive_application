@@ -17,6 +17,10 @@ export const createUserController = async (req: Request, res: Response) => {
     // After this we can implement continous Rgisteration also
     const {username, email, password} = req.body;
     const hashedPassword : string = await bcrypt.hash(password, 10);
+    const getUser = await getUserByEmail(email);
+    if (getUser) {
+      return res.status(409).json({ message: 'User Already Exist.' });
+    }
     const newUser = await createUser({username,email,password:hashedPassword});
     res.status(201).json(newUser);
   } catch (error) {

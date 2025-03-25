@@ -17,8 +17,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const [view, setView] = useState<DashboardView>("home");
 
   const handleLogout = () => {
-    // Remove token from sessionStorage
-    sessionStorage.removeItem("token");
+    // Remove token from 
+    // Adding encription and deciption logic might solve this
+    localStorage.removeItem("token");
 
     // Navigate back to "login"
     onViewChange("login");
