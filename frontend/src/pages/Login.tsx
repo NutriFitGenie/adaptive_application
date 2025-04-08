@@ -3,6 +3,8 @@ import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
+import "../styles/login.css";
+
 interface LoginFormValues {
   email: string;
   password: string;
