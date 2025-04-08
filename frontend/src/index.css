@@ -2,7 +2,11 @@
 
 @import "tailwindcss";
 
-:root {
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
   /* Main app colours */
   --background: white;
   --primaryColor1: #029aa5;
