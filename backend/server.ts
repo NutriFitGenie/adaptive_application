@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
 import userRoutes from './src/routes/userRoutes';
+import chatGPTRoutes from './src/routes/chatgpt.routes';
 import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
 // Load environment variables
@@ -23,6 +24,9 @@ app.get("/", (req, res) => {
 
 // user routes
 app.use('/api/users', userRoutes);
+
+// ChatGPT routes
+app.use('/api/chatgpt', chatGPTRoutes);
 
 // Mount Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
