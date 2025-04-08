@@ -10,8 +10,8 @@ export interface IActualExercise extends Document {
   set1Reps?: number;
   set2Reps?: number;
   set3Reps?: number;
-  oneRepMax: number;
   week: number;
+  day:number
 }
 
 const actualExerciseSchema: Schema = new Schema({
@@ -28,8 +28,8 @@ const actualExerciseSchema: Schema = new Schema({
   set1Reps: { type: Number, default: 8 },
   set2Reps: { type: Number, default: 8 },
   set3Reps: { type: Number, default: 8 },
-  oneRepMax: { type: Number, required: false },
-  week: { type: Number, required: false ,default: 1}
+  week: { type: Number, required: false ,default: 1},
+  day:{ type: Number, required: false ,default: 1}
 });
 
 const actualExercise = model<IActualExercise>('actualExercise', actualExerciseSchema);

@@ -6,14 +6,17 @@ import {
   deleteWorkoutController,
   generateTestingPlanController,
   updateTestingPlanController,
-  getTestingWeekStatusController
+  getTestingWeekStatusController,
+  getCurrentWorkoutListController
 } from '../controllers/workoutController';
 
 // Get the workout list for a user
 workoutRouter.get('/getWorkout', getWorkoutListController);
 
+workoutRouter.get('/getCurrentWorkout', getCurrentWorkoutListController);
+
 // Update a specific workout for a user
-workoutRouter.put('/updateWorkout/:id', updateWorkoutController);
+workoutRouter.post('/updateWorkout', updateWorkoutController);
 
 // Delete a specific workout for a user
 workoutRouter.delete('/deleteWorkout/:id', deleteWorkoutController);
@@ -23,6 +26,7 @@ workoutRouter.get('/generateTestingPlan', generateTestingPlanController);
 
 // Set the testing workout list for a user
 workoutRouter.post('/updateTestingPlan', updateTestingPlanController);
+
 
 workoutRouter.get('/testStatus',getTestingWeekStatusController);
 

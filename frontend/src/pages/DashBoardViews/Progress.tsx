@@ -1,12 +1,13 @@
-// Progress.tsx
 import React, { useState, useEffect } from 'react';
 import '../../App.css';
 
 const userId = "67e1627cebe27e5f8285ec21";
 
 interface Exercise {
+  week: number;
   _id: string;
   name: string;
+  description: string;
   weight: number;
   set1Reps: number;
   set2Reps: number;
@@ -19,6 +20,7 @@ interface WorkoutProps {
 }
 
 const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
+  const [week, setWeek] = useState<number>(0);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [inputs, setInputs] = useState<{ [key: string]: string[] }>({});
   const [actualWeights, setActualWeights] = useState<{ [key: string]: string }>({});
@@ -26,16 +28,23 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   // Fetch current week plan and prefill inputs and actualWeights.
   const fetchCurrentWeekPlan = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/workout/getWorkout?userId=${userId}`);
+      const response = await fetch(`http://localhost:3000/api/workout/getCurrentWorkout?userId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch current week plan");
       const currentPlan = await response.json();
       setExercises(currentPlan);
+      
+      // If API returns at least one exercise, use its week value.
+      if (currentPlan.length > 0 && currentPlan[0].week !== undefined) {
+        setWeek(currentPlan[0].week);
+      }
+
       // Prefill actualWeights with planned weight.
       const weights: { [key: string]: string } = {};
       currentPlan.forEach((ex: Exercise) => {
         weights[ex.name] = String(ex.weight);
       });
       setActualWeights(weights);
+      
       // Prefill rep inputs.
       const repInputs: { [key: string]: string[] } = {};
       currentPlan.forEach((ex: Exercise) => {
@@ -75,20 +84,36 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   // Function to submit the workout for a specific day.
   const handleSubmitDay = async (dayKey: string) => {
     const dayExercises = exercisesByDay[dayKey];
-    const workoutData = dayExercises.map((ex: Exercise) => {
-      // Map input reps to numbers.
-      const reps = (inputs[ex.name] || []).map((val) => parseInt(val, 10) || 0);
-      const weight = parseFloat(actualWeights[ex.name]) || ex.weight;
+    // Build the Exercises array with expected keys:
+    const exercisesPayload = dayExercises.map((ex: Exercise) => {
+      const repsArray = (inputs[ex.name] || []).map((val) => parseInt(val, 10) || 0);
+      const weightValue = parseFloat(actualWeights[ex.name]) || ex.weight;
       return {
-        exerciseId: ex._id,
-        name: ex.name,
-        actualWeight: weight,
-        actualReps: reps,
+        Exercise_id: ex._id,
+        Exercise: ex.name,
+        description: ex.description,
+        body_part: ex.day ? ex.day.toString() : "Unknown", // update if you have a dedicated category field
+        weight: weightValue,
+        set1Reps: repsArray[0],
+        set2Reps: repsArray[1],
+        set3Reps: repsArray[2],
+        week: ex.week,
       };
     });
-    const payload = { userId, day: dayKey, workouts: workoutData };
+    
+    // Build the complete payload to match your sample.
+    const payload = {
+      userId,
+      updatedPlan: [
+        {
+          Day: dayKey,
+          Exercises: exercisesPayload,
+        },
+      ],
+    };
+    
     try {
-      const response = await fetch("http://localhost:3000/api/workout/submitWorkout", {
+      const response = await fetch("http://localhost:3000/api/workout/updateWorkout", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -97,6 +122,8 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
       const result = await response.json();
       console.log("Submit day's workout result:", result);
       alert(`Workout for Day ${dayKey} saved successfully!`);
+      // After submission, fetch the updated current week plan to get the next workout.
+      fetchCurrentWeekPlan();
     } catch (error) {
       console.error("Error submitting day's workout:", error);
       alert("Error saving workout. Please try again");
@@ -107,6 +134,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
     <div className="App">
       <header className="App-header">
         <h2>Workout Progress Tracker</h2>
+        <p>Current Week: {week}</p>
       </header>
       <div className="actual-workout-section">
         <h2>Enter Your Actual Workout Data</h2>
@@ -114,7 +142,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
           .sort((a, b) => parseInt(a) - parseInt(b))
           .map((day, idx) => (
             <div key={day} className="actual-workout-day">
-              <h3>{`Workout ${idx + 1} (Day ${day})`}</h3>
+              <h3>{`Workout (Day ${day})`}</h3>
               {exercisesByDay[day].map((ex) => (
                 <div key={ex._id} className="exercise-input">
                   <p>

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getWorkoutList, updateWorkout, deleteWorkout ,generateTestingPlan,updateTestingPlan,getTestingWeekStatus} from '../services/workoutService';
+import { getWorkoutList, updateWorkout, deleteWorkout ,generateTestingPlan,updateTestingPlan,getTestingWeekStatus,getCurrentWorkoutList} from '../services/workoutService';
 
 // Get Workout List for a User
 export const getWorkoutListController = async (req: Request, res: Response) => {
@@ -15,24 +15,33 @@ export const getWorkoutListController = async (req: Request, res: Response) => {
   }
 };
 
-// Update a specific Workout for a User
-export const updateWorkoutController = async (req: Request, res: Response) => {
+export const getCurrentWorkoutListController = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
-    const { id } = req.params;
     if (!userId) {
       return res.status(400).json({ message: 'userId query parameter is required' });
     }
-    const updateData = req.body;
-    const updatedWorkout = await updateWorkout({ id, userId: userId as string, updateData });
-    if (!updatedWorkout) {
-      return res.status(404).json({ message: 'Workout not found for this user' });
-    }
-    res.status(200).json(updatedWorkout);
+    const workoutList = await getCurrentWorkoutList({ userId: userId as string });
+    res.status(200).json(workoutList);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating workout' });
+    res.status(500).json({ error: 'Error retrieving workout list' });
   }
 };
+
+// Update a specific Workout for a User
+export const updateWorkoutController = async (req: Request, res: Response) => {
+  try {
+    const { userId ,updatedPlan} = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: 'userId query parameter is required' });
+    }
+    const workoutList = await updateWorkout({ userId,updatedPlan });
+    res.status(200).json(workoutList);
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving workout list' });
+  }
+};
+
 
 // Delete a specific Workout for a User
 export const deleteWorkoutController = async (req: Request, res: Response) => {
