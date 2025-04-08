@@ -18,7 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
   const handleLogout = () => {
     // Remove token from sessionStorage
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
 
     // Navigate back to "login"
     onViewChange("login");

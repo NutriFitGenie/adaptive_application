@@ -48,22 +48,21 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
       return;
     }
 
-    try {   
-      console.log("Form Data:", formData);   
+    try {
       const response = await axios.post("http://localhost:3000/api/users/login", formData);
       console.log("Login Successful:", response.data);
 
       // Example response: { message: 'Login successful.', token: '...', user: {...} }
 
       // 1. Store JWT token in localStorage
-      localStorage.setItem("token", response.data.token); 
+      localStorage.setItem("token", response.data.token);
 
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {
       console.error("Unexpected Error:", error);
-      alert("Something went wrong! Please try again.");
+      alert("Invalid login credentials! Please try again.");
     }
   };
 
