@@ -4,9 +4,10 @@ import Workouts from "./DashBoardViews/Workouts";
 import Nutrition from "./DashBoardViews/Nutrition";
 import Progress from "./DashBoardViews/Progress";
 import Setting from "./DashBoardViews/Setting";
+import History from "./DashBoardViews/History";
 
 // List of valid sub-view names in the Dashboard
-type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "setting";
+type DashboardView = "home" | "workouts" | "nutrition" | "progress" |"history" |"setting";
 
 interface DashboardProps {
   onViewChange: (view: "login" | "register" | "dashboard") => void;
@@ -32,6 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         <button onClick={() => setView("workouts")}>Workouts</button>
         <button onClick={() => setView("nutrition")}>Nutrition</button>
         <button onClick={() => setView("progress")}>Progress</button>
+        <button onClick={() => setView("history")}>history</button>
         <button onClick={() => setView("setting")}>Setting</button>
         {/* Logout button */}
         <button onClick={handleLogout} style={{ marginLeft: "10px" }}>
@@ -41,9 +43,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
       {/* Render the corresponding component based on 'view' */}
       {view === "home" && <Home />}
-      {view === "workouts" && <Workouts />}
+      {view === "workouts" && <Workouts onViewChange={onViewChange} />}
       {view === "nutrition" && <Nutrition />}
-      {view === "progress" && <Progress />}
+      {view === "progress" && <Progress onViewChange={onViewChange} />}
+      {view === "history" && <History onViewChange={onViewChange} />}
       {view === "setting" && <Setting />}
     </div>
   );
