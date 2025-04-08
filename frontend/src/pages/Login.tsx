@@ -39,7 +39,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
-    } catch (err) {
+    } catch {
       setError("Invalid email or password.");
     }
   };

@@ -37,7 +37,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
 
       // After successful registration, navigate to "login" view
       onViewChange("login");
-    } catch (err) {
+    } catch {
       setError("Registration failed. Please try again.");
     }
   };
