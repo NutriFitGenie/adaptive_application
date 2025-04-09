@@ -3,8 +3,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
-// A simple union type listing valid view strings:
-type View = "login" | "register" | "dashboard";
+// Define the union type for views
+export type View = "login" | "register" | "dashboard";
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>("login");
@@ -25,7 +25,6 @@ const App: React.FC = () => {
 
   return (
     <div>
-      {/* Render only one of these at a time based on the current 'view' */}
       {view === "login" && <Login onViewChange={handleViewChange} />}
       {view === "register" && <Register onViewChange={handleViewChange} />}
       {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}

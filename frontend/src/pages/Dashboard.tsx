@@ -4,10 +4,12 @@ import Workouts from "./DashBoardViews/Workouts";
 import Nutrition from "./DashBoardViews/Nutrition";
 import Progress from "./DashBoardViews/Progress";
 import Setting from "./DashBoardViews/Setting";
+import History from "./DashBoardViews/History";
 import dataStore from "../data/dataStore"; // Global data store object
 import "../styles/dashboard.css"; // Import the CSS
 
-type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "setting";
+// List of valid sub-view names in the Dashboard
+type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting";
 
 interface DashboardProps {
   onViewChange: (view: "login" | "register" | "dashboard") => void;
@@ -61,13 +63,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-top">
           <div className="logo">NutriFitGenie</div>
-          <div className="nav-items">
+          <nav className="nav-items">
             <button onClick={() => { setView("home"); setSidebarOpen(false); }}>Home</button>
             <button onClick={() => { setView("workouts"); setSidebarOpen(false); }}>Workouts</button>
             <button onClick={() => { setView("nutrition"); setSidebarOpen(false); }}>Nutrition</button>
             <button onClick={() => { setView("progress"); setSidebarOpen(false); }}>Progress</button>
+            <button onClick={() => { setView("history"); setSidebarOpen(false); }}>History</button>
             <button onClick={() => { setView("setting"); setSidebarOpen(false); }}>Setting</button>
-          </div>
+          </nav>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
           Logout
@@ -85,12 +88,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           <p>{fullFormattedDate}</p>
         </div>
 
+        {/* Render the view based on selection */}
         {view === "home" && (
           <Home planData={planData} previousHistory={previousHistory} currentDay={currentDay} />
         )}
-        {view === "workouts" && <Workouts />}
+        {view === "workouts" && <Workouts onViewChange={onViewChange} />}
         {view === "nutrition" && <Nutrition />}
-        {view === "progress" && <Progress />}
+        {view === "progress" && <Progress onViewChange={onViewChange} />}
+        {view === "history" && <History onViewChange={onViewChange} />}
         {view === "setting" && <Setting />}
       </main>
     </div>
