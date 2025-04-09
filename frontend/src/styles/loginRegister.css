@@ -1,0 +1,12 @@
+.loginRegistrationButton {
+  height: 46px;
+  width: 75%;
+  background-color: var(--primaryColor1);
+  border-radius: var(--cornerRadius);
+  box-shadow: 3px 4px 5px var(--formText);
+  color: var(--textLight);
+  cursor: pointer;
+}
+.loginRegistrationButton:hover {
+  scale: 1.015;
+}

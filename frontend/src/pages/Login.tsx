@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import LogoLarge from "../assets/LogoLarge.svg";
 import Logo from "../assets/Logo.svg";
-import "../styles/login.css";
+import "../styles/loginRegister.css";
 
 interface LoginFormValues {
   email: string;
@@ -68,72 +68,78 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
 
   return (
       <div className="flex w-full h-full overflow-y-auto">
-        <div 
-          className="flex flex-col justify-center h-full lg:w-1/2 w-full"
-          style={{ minHeight: "800px" }}
-        >
+        {/* Left Side */}
+        <div className="flex flex-col justify-center items-center w-full lg:w-1/2 px-6 py-10">
+        <div className="w-full max-w-md">
           <div className="flex justify-end h-16 w-full">
-            <img
-              src={Logo}
-              alt="Logo"
-              className="lg:h-0 lg:w-0 h-full w-full"
-            />
-          </div>
-          <div className="flex flex-col h-2/3">
-            <div className="text-center h-1/5">
-              <div className="titleText primaryColor1">
-                Log In to your Account
-              </div>
-              <div className="miniText secondaryColor">
+              <img
+                src={Logo}
+                alt="Logo"
+                className="lg:h-0 lg:w-0 h-full w-full"
+              />
+            </div>
+            <div className="text-center mb-8">
+              <h1 className="titleText primaryColor1">Log In to your Account</h1>
+              <p className="miniText secondaryColor mt-2">
                 Welcome back to NutriFitGenie!
-              </div>
+              </p>
             </div>
-            <div className="text-center h-1/2">
-              <div className="flex justify-center items-center h-1/3">
-                <input
-                  type="text"
-                  name="email"
-                  placeholder="Email"
-                  className="flex items-center loginRegistrationFormInput"
-                  value={formData.email}
-                  onChange={handleFormData}
-                />
-              </div>
-              <div className="flex justify-center items-center h-1/3">
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  className="loginRegistrationFormInput ms-6"
-                  value={formData.password}
-                  onChange={handleFormData}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="-translate-x-10"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-6 h-6 secondaryColor" />
-                  ) : (
-                    <Eye className="w-6 h-6 secondaryColor" />
-                  )}
-                </button>
-              </div>
-              <div className="flex justify-center items-center h-1/3 ">
-                <button className="loginRegistrationButton" onClick={handleLogin}>
-                  Log In
-                </button>
-              </div>
+
+            <div className="mb-7">
+              <input
+                type="text"
+                name="email"
+                placeholder="Email"
+                className="rounded-full px-4 py-3 shadow-md w-full focus:outline-none"
+                value={formData.email}
+                onChange={handleFormData}
+              />
             </div>
-            <div className="text-center h-1/6 miniText">
-              <span className="secondaryColor">Don't have an account?</span>
-              <button className="primaryColor1 ml-1 hover:underline cursor-pointer" onClick={() => onViewChange("register")}>
-                Sign Up
+    
+            <div className="relative mb-10">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                className="rounded-full px-4 py-3 shadow-md w-full pr-12 focus:outline-none"
+                value={formData.password}
+                onChange={handleFormData}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5 secondaryColor cursor-pointer" />
+                ) : (
+                  <Eye className="w-5 h-5 secondaryColor cursor-pointer" />
+                )}
               </button>
             </div>
+
+            <div className="mb-6 text-center">
+            <button
+              className="loginRegistrationButton"
+              onClick={handleLogin}
+            >
+              Log In
+            </button>
+          </div>
+  
+          <div className="text-center miniText">
+            <span className="secondaryColor">Don't have an account?</span>
+            <button
+              className="primaryColor1 ml-1 hover:underline cursor-pointer"
+              onClick={() => onViewChange("register")}
+            >
+              Sign Up
+            </button>
+          </div>
           </div>
         </div>
+
+        {/* Right Side */}
         <div className="flex flex-col h-full lg:w-1/2 w-0">
           <div className="flex justify-end w-full">
             <img src={LogoLarge} alt="Large Logo" />
