@@ -27,7 +27,7 @@ const App: React.FC = () => {
     <div>
       {/* Render only one of these at a time based on the current 'view' */}
       {view === "login" && <Login onViewChange={handleViewChange} />}
-      {view === "register" && <Register onViewChange={handleViewChange} />}
+      {view === "register" && <Register onViewChange={(v: string) => handleViewChange(v as View)} />}
       {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}
     </div>
   );

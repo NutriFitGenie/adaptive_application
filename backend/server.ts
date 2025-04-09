@@ -3,9 +3,16 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
-import userRoutes from './src/routes/userRoutes';
+import userRoutes from './src/routes/userRoutes'; 
 import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
+import recommenderRoutes from './src/routes/FoodRecommenderRoute';
+import weeklyUpdates from './src/routes/weeklyUpdateRoutes';
+
+const envPath = path.resolve(__dirname, '.env');
+// console.log("Loading .env from:", envPath);
+
+dotenv.config({ path: envPath });
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -23,7 +30,8 @@ app.get("/", (req, res) => {
 
 // user routes
 app.use('/api/users', userRoutes);
-
+app.use('/api/food-recommender', recommenderRoutes);
+app.use('/api/weeklyUpdates', weeklyUpdates);
 // Mount Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
