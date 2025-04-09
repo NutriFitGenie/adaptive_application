@@ -23,21 +23,23 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
     password: "",
   };
 
-  const validationSchema = Yup.object({
+  const validationSchema = Yup.object({ 
     email: Yup.string().email("Invalid email format").required("Email is required"),
     password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   });
 
   const handleSubmit = async (values: LoginFormValues) => {
     try {
+      console.log(values)
       const response = await axios.post("http://localhost:3000/api/users/login", values);
-      console.log("Login Successful:", response.data);
-
       // Example response: { message: 'Login successful.', token: '...', user: {...} }
 
       // 1. Store JWT token in localStorage
-      localStorage.setItem("token", response.data.token); 
-
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userData", response.data.userData);
+      //localStorage.setItem("userData",JSON.parse(response.data));
+      const data = JSON.stringify(response.data);
+      console.log(data);
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
