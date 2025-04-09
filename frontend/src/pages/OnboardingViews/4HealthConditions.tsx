@@ -1,5 +1,7 @@
 import { useState, ChangeEvent } from "react";
 
+import Logo from "../../assets/Logo.svg";
+
 interface HealthConditionsProps {
   onNext: (data: string[]) => void;
 }
@@ -30,8 +32,14 @@ export default function HealthConditions({ onNext }: HealthConditionsProps) {
 
   const handleNext = () => {
     const allConditions = [...selectedConditions];
-    if (other.trim()) {
-      allConditions.push(other.trim());
+    const trimmedOther = other.trim();
+
+    if (trimmedOther) {
+      if (/^\d+$/.test(trimmedOther)) {
+        alert("Please enter a valid health condition for 'Other'.");
+        return;
+      }
+      allConditions.push(trimmedOther);
     }
 
     if (allConditions.length === 0) {
@@ -44,6 +52,13 @@ export default function HealthConditions({ onNext }: HealthConditionsProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
+      <div className="flex justify-end h-16 w-full">
+        <img
+          src={Logo}
+          alt="Logo"
+          className="lg:h-0 lg:w-0 h-full w-full"
+        />
+      </div>
       <div className="text-center mb-6">
         <h1 className="titleText primaryColor1">Health Conditions</h1>
         <p className="miniText secondaryColor mt-1">Any health conditions?</p>
@@ -60,17 +75,18 @@ export default function HealthConditions({ onNext }: HealthConditionsProps) {
               type="checkbox"
               checked={selectedConditions.includes(condition)}
               onChange={() => toggleCondition(condition)}
-              className="accent-primaryColor1 w-4 h-4"
+              className="w-4 h-4"
+              style={{accentColor: "var(--primaryColor1)"}}
             />
             <span className="text-sm">{condition}</span>
           </label>
         ))}
 
-        <label className="flex items-center gap-2 col-span-2">
+        <label className="flex justify-center items-center gap-2 col-span-2">
           <input
             type="text"
             placeholder="Other"
-            className="rounded-full px-4 py-2 shadow-md w-full focus:outline-none"
+            className="secondaryOnboardingForm"
             value={other}
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setOther(e.target.value)

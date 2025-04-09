@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import Logo from "../../assets/Logo.svg";
+
 interface FitnessGoalsProps {
   onNext: (data: {
     goal: string;
@@ -11,7 +13,7 @@ interface FitnessGoalsProps {
 export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
   const [selectedGoal, setSelectedGoal] = useState("");
   const [fitnessLevel, setFitnessLevel] = useState("");
-  const [daysPerWeek, setDaysPerWeek] = useState(4);
+  const [daysPerWeek, setDaysPerWeek] = useState(3);
 
   const fitnessGoals = [
     { label: "Fat Loss", value: "fat_loss", icon: "🔥" },
@@ -26,6 +28,11 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
       return;
     }
 
+    if (daysPerWeek < 1 || daysPerWeek > 7) {
+      alert("Days per week must be between 1 and 7.");
+      return;
+    }
+
     onNext({
       goal: selectedGoal,
       fitnessLevel,
@@ -35,6 +42,13 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
+      <div className="flex justify-end h-16 w-full">
+        <img
+          src={Logo}
+          alt="Logo"
+          className="lg:h-0 lg:w-0 h-full w-full"
+        />
+      </div>
       <div className="text-center mb-6">
         <h1 className="titleText primaryColor1">Fitness Goals</h1>
         <p className="miniText secondaryColor mt-1">
@@ -53,15 +67,15 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
                 : "textDark background"
             }`}
           >
-            <div className="text-3xl mb-2">{goal.icon}</div>
+            <div className="text-4xl mb-2">{goal.icon}</div>
             <div className="font-semibold">{goal.label}</div>
           </button>
         ))}
       </div>
 
-      <div className="mb-5">
+      <div className="flex justify-center mb-5">
         <select
-          className="w-full rounded-full px-4 py-3 shadow-md textDark focus:outline-none"
+          className="secondaryOnboardingForm"
           value={fitnessLevel}
           onChange={(e) => setFitnessLevel(e.target.value)}
         >
@@ -74,8 +88,8 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
         </select>
       </div>
 
-      <div className="mb-5 text-center">
-        <label className="block mb-1 miniText">How many days a week?</label>
+      <div className="flex justify-center items-center gap-12 mb-5 text-center">
+        <label className="block mb-1 textDark">How many days a week?</label>
         <input
           type="number"
           min={1}

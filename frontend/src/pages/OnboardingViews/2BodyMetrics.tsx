@@ -1,5 +1,7 @@
 import { useState, ChangeEvent } from "react";
 
+import Logo from "../../assets/Logo.svg";
+
 interface BodyMetricsProps {
   onNext: (data: {
     weight: number;
@@ -33,6 +35,23 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
       return;
     }
 
+    if (isNaN(parseFloat(weight)) || parseFloat(weight) <= 0) {
+      alert("Invalid weight");
+      return;
+    }
+    if (isNaN(parseFloat(height)) || parseFloat(height) <= 0) {
+      alert("Invalid height");
+      return;
+    }
+    if (isNaN(parseFloat(neck)) || parseFloat(neck) <= 0) {
+      alert("Invalid neck measurement");
+      return;
+    }
+    if (isNaN(parseFloat(waist)) || parseFloat(waist) <= 0) {
+      alert("Invalid waist measurement");
+      return;
+    }
+
     onNext({
       weight: parseFloat(weight),
       height: parseFloat(height),
@@ -45,6 +64,13 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
 
   return (
     <div className="w-full max-w-md mx-auto">
+      <div className="flex justify-end h-16 w-full">
+        <img
+          src={Logo}
+          alt="Logo"
+          className="lg:h-0 lg:w-0 h-full w-full"
+        />
+      </div>
       <div className="text-center mb-6">
         <h1 className="titleText primaryColor1">Body Metrics</h1>
         <p className="miniText secondaryColor mt-1">
@@ -87,12 +113,12 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
         />
       </div>
 
-      <div className="mb-5">
+      <div className="flex justify-center mb-5">
         <select
           name="activityLevel"
           value={formData.activityLevel}
           onChange={handleChange}
-          className="w-full rounded-full px-4 py-3 shadow-md textDark focus:outline-none"
+          className="secondaryOnboardingForm"
         >
           <option value="" disabled>
             Activity Level
