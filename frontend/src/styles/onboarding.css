@@ -1,4 +1,4 @@
-.loginRegistrationButton {
+.onboardingNextButton {
   height: 46px;
   width: 75%;
   background-color: var(--primaryColor1);
@@ -7,6 +7,6 @@
   color: var(--textLight);
   cursor: pointer;
 }
-.loginRegistrationButton:hover {
+.onboardingNextButton:hover {
   scale: 1.015;
 }

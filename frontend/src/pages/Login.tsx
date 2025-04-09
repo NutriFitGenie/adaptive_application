@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import LogoLarge from "../assets/LogoLarge.svg";
 import Logo from "../assets/Logo.svg";
-import "../styles/loginRegister.css";
+import "../styles/onboarding.css";
 
 interface LoginFormValues {
   email: string;
@@ -120,7 +120,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
 
             <div className="mb-6 text-center">
             <button
-              className="loginRegistrationButton"
+              className="onboardingNextButton"
               onClick={handleLogin}
             >
               Log In
