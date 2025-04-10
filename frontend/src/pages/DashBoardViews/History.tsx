@@ -1,8 +1,8 @@
 // History.tsx
 import React, { useState, useEffect } from 'react';
-import '../../App.css';
 
-const userId = "67e1627cebe27e5f8285ec21";
+
+const userId = "67f522dae790288113df8b02";
 
 interface HistoryEntry {
   week: number;
@@ -20,8 +20,8 @@ interface ExerciseWithHistory {
 }
 
 interface WorkoutProps {
-    onViewChange: (view: "login" | "register" | "dashboard") => void;
-  }
+  onViewChange: (view: "login" | "register" | "dashboard") => void;
+}
 
 const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
   const [exercises, setExercises] = useState<ExerciseWithHistory[]>([]);
@@ -46,37 +46,51 @@ const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
       <header className="App-header">
         <h2>Workout History</h2>
       </header>
-      <section className="history">
+      <section className="history px-4 md:px-8 lg:px-16 w-full mx-auto mt-8">
         {exercises.map((ex) => (
-          <div key={ex._id} className="exercise-history">
-            <h4>{ex.name}</h4>
+          <div key={ex._id} className="exercise-history bg-white border border-gray-200 rounded-md shadow-sm p-4 mb-8">
+            <h4 className="text-xl font-semibold text-gray-700 mb-3">{ex.name}</h4>
             {ex.history && ex.history.length > 0 ? (
-              <table border={1} cellPadding={5}>
-                <thead>
-                  <tr>
-                    <th>Week</th>
-                    <th>Weight (kg)</th>
-                    <th>Planned Sets</th>
-                    <th>Actual Sets</th>
-                    <th>Performance Ratio</th>
-                    <th>Performance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ex.history.map((entry, idx) => (
-                    <tr key={idx}>
-                      <td>{entry.week}</td>
-                      <td>{entry.weight}</td>
-                      <td>{entry.planned.join(', ')}</td>
-                      <td>{entry.actual.join(', ')}</td>
-                      <td>{entry.performanceRatio}</td>
-                      <td>{entry.performanceClass}</td>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 table-auto">
+                  <thead className="primaryColor1BG">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Week
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Weight (kg)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Planned Sets
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Actual Sets
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Performance Ratio
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Performance
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {ex.history.map((entry, idx) => (
+                      <tr key={idx} className="hover:bg-gray-100">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.week}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.weight}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.planned.join(', ')}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actual.join(', ')}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceRatio}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceClass}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
-              <p>No history yet.</p>
+              <p className="text-gray-600">No history yet.</p>
             )}
           </div>
         ))}

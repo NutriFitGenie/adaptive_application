@@ -36,7 +36,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
 
       // 1. Store JWT token in localStorage
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userData", response.data.userData);
+      localStorage.setItem("userData", JSON.stringify(response.data.userData));
       //localStorage.setItem("userData",JSON.parse(response.data));
       const data = JSON.stringify(response.data);
       console.log(data);

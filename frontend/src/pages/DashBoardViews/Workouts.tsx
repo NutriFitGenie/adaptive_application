@@ -1,8 +1,8 @@
 // PlannedWorkoutsPage.tsx
 import React, { useState, useEffect } from 'react';
-import '../../App.css';
+// import '../../App.css';
 
-const userId = "67e1627cebe27e5f8285ec21";
+const userId = "67f522dae790288113df8b02";
 
 interface Exercise {
   _id: string;
@@ -47,33 +47,42 @@ const Workouts: React.FC<WorkoutProps> = ({ onViewChange }) => {
       <header className="App-header">
         <h2>Planned Workouts</h2>
       </header>
-      <div className="planned-workout-section">
+      {/* Changed container: removed max-w-screen-lg so desktop takes full width */}
+      <div className="mx-auto mt-8 px-4 md:px-8 lg:px-16 w-full">
         {Object.keys(exercisesByDay)
           .sort((a, b) => parseInt(a) - parseInt(b))
           .map((day, idx) => (
-            <div key={day} className="planned-workout-day">
-              <h3>{`Workout ${idx + 1} (Day ${day})`}</h3>
-              <table className="planned-workout-table">
-                <thead>
-                  <tr>
-                    <th>Exercise</th>
-                    <th>Weight (KG)</th>
-                    <th>Reps</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {exercisesByDay[day].map((ex) => {
-                    const repsString = `${ex.set1Reps} / ${ex.set2Reps} / ${ex.set3Reps}`;
-                    return (
-                      <tr key={ex._id}>
-                        <td>{ex.name}</td>
-                        <td>{ex.weight}</td>
-                        <td>{repsString}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div key={day} className="mb-8 bg-white border border-gray-200 rounded-md shadow-sm p-4">
+              <h3 className="text-xl font-semibold text-gray-700 mb-3">{`Workout ${idx + 1} (Day ${day})`}</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 table-auto">
+                  <thead className="primaryColor1BG">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Exercise
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Weight (KG)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                        Reps
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {exercisesByDay[day].map((ex) => {
+                      const repsString = `${ex.set1Reps} / ${ex.set2Reps} / ${ex.set3Reps}`;
+                      return (
+                        <tr key={ex._id} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ex.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ex.weight}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repsString}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           ))}
       </div>

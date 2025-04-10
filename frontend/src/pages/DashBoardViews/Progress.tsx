@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../../App.css';
 
-const userId = "67e1627cebe27e5f8285ec21";
+const userId = "67f522dae790288113df8b02";
 
 interface Exercise {
   week: number;
