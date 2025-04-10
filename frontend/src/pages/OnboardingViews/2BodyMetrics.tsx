@@ -34,33 +34,42 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
       alert("Please fill out all fields.");
       return;
     }
-
-    if (isNaN(parseFloat(weight)) || parseFloat(weight) <= 0) {
-      alert("Invalid weight");
+  
+    const w = parseFloat(weight);
+    const h = parseFloat(height);
+    const n = parseFloat(neck);
+    const ws = parseFloat(waist);
+  
+    if (
+      isNaN(w) || isNaN(h) || isNaN(n) || isNaN(ws) ||
+      w <= 0 || h <= 0 || n <= 0 || ws <= 0
+    ) {
+      alert("Please enter valid positive numbers.");
       return;
     }
-    if (isNaN(parseFloat(height)) || parseFloat(height) <= 0) {
-      alert("Invalid height");
-      return;
+  
+    // Add unit-based validation
+    if (units === "metric") {
+      if (w < 30 || w > 300) return alert("Weight should be between 30–300 kg.");
+      if (h < 100 || h > 250) return alert("Height should be between 100–250 cm.");
+      if (n < 20 || n > 60) return alert("Neck should be between 20–60 cm.");
+      if (ws < 40 || ws > 200) return alert("Waist should be between 40–200 cm.");
+    } else {
+      if (w < 66 || w > 660) return alert("Weight should be between 66–660 lbs.");
+      if (h < 39 || h > 98) return alert("Height should be between 39–98 in.");
+      if (n < 8 || n > 24) return alert("Neck should be between 8–24 in.");
+      if (ws < 16 || ws > 79) return alert("Waist should be between 16–79 in.");
     }
-    if (isNaN(parseFloat(neck)) || parseFloat(neck) <= 0) {
-      alert("Invalid neck measurement");
-      return;
-    }
-    if (isNaN(parseFloat(waist)) || parseFloat(waist) <= 0) {
-      alert("Invalid waist measurement");
-      return;
-    }
-
+  
     onNext({
-      weight: parseFloat(weight),
-      height: parseFloat(height),
-      neck: parseFloat(neck),
-      waist: parseFloat(waist),
+      weight: w,
+      height: h,
+      neck: n,
+      waist: ws,
       activityLevel,
       units,
     });
-  };
+  };  
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -82,7 +91,7 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
         <input
           type="number"
           name="weight"
-          placeholder="Weight"
+          placeholder={units === "metric" ? "Weight (kg)" : "Weight (lbs)"}
           className="rounded-full px-4 py-3 shadow-md w-full focus:outline-none"
           value={formData.weight}
           onChange={handleChange}
@@ -90,7 +99,7 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
         <input
           type="number"
           name="height"
-          placeholder="Height"
+          placeholder={units === "metric" ? "Height (cm)" : "Height (in)"}
           className="rounded-full px-4 py-3 shadow-md w-full focus:outline-none"
           value={formData.height}
           onChange={handleChange}
@@ -98,7 +107,7 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
         <input
           type="number"
           name="neck"
-          placeholder="Neck"
+          placeholder={units === "metric" ? "Neck (cm)" : "Neck (in)"}
           className="rounded-full px-4 py-3 shadow-md w-full focus:outline-none"
           value={formData.neck}
           onChange={handleChange}
@@ -106,7 +115,7 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
         <input
           type="number"
           name="waist"
-          placeholder="Waist"
+          placeholder={units === "metric" ? "Waist (cm)" : "Waist (in)"}
           className="rounded-full px-4 py-3 shadow-md w-full focus:outline-none"
           value={formData.waist}
           onChange={handleChange}
