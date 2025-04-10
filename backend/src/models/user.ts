@@ -1,17 +1,44 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  username: string;
+  firstName?: string;
+  lastName?: string;
+  age?: number;
+  gender?: string;
   email: string;
   password: string;
-  // You can add additional fields here (e.g., roles, profile info, etc.)
+  goal?: string;
+  fitnessLevel?: string;
+  daysPerWeek?: number;
+  weight?: number;
+  height?: number;
+  neck?: number;
+  waist?: number;
+  activityLevel?: string;
+  units?: "metric" | "imperial";
+  dietaryPreferences?: string[];
+  healthConditions?: string[];
 }
 
 const UserSchema: Schema = new Schema(
   {
-    username: { type: String, required: true, unique: true },
+    firstName: { type: String },
+    lastName: { type: String },
+    age: { type: Number },
+    gender: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    goal: { type: String },
+    fitnessLevel: { type: String },
+    daysPerWeek: { type: Number },
+    weight: { type: Number },
+    height: { type: Number },
+    neck: { type: Number },
+    waist: { type: Number },
+    activityLevel: { type: String },
+    units: { type: String, enum: ['metric', 'imperial'] },
+    dietaryPreferences: [{ type: String }],
+    healthConditions: [{ type: String }],
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

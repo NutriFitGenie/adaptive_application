@@ -13,18 +13,83 @@ import config from '../config/env.config';
 
 export const createUserController = async (req: Request, res: Response) => {
   try {
-    // Creating hashing to create tokens
-    // After this we can implement continous Rgisteration also
-    const {username, email, password} = req.body;
-    const hashedPassword : string = await bcrypt.hash(password, 10);
-    const newUser = await createUser({username,email,password:hashedPassword});
-    res.status(201).json(newUser);
+    const {
+      firstName,
+      lastName,
+      age,
+      gender,
+      email,
+      password,
+      goal,
+      fitnessLevel,
+      daysPerWeek,
+      weight,
+      height,
+      neck,
+      waist,
+      activityLevel,
+      units,
+      dietaryPreferences,
+      healthConditions,
+    } = req.body;
+
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await createUser({
+      firstName,
+      lastName,
+      age,
+      gender,
+      email,
+      password: hashedPassword,
+      goal,
+      fitnessLevel,
+      daysPerWeek,
+      weight,
+      height,
+      neck,
+      waist,
+      activityLevel,
+      units,
+      dietaryPreferences,
+      healthConditions,
+    });
+
+    if (!config.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
+
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      config.JWT_SECRET as jwt.Secret,
+      { expiresIn: config.JWT_TOKEN_EXPIRE as string }
+    );
+
+    const userResponse = {
+      id: newUser._id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      goal: newUser.goal,
+      fitnessLevel: newUser.fitnessLevel,
+      // ... add more if needed
+    };
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: userResponse,
+    });
+
   } catch (error) {
     res.status(500).json({ error: 'Error creating user' });
   }
 };
-
-
 
 export const loginUserController = async (req: Request, res: Response) => {
   try {
