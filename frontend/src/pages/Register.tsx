@@ -45,9 +45,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
   };
 
   const handleFinish = async () => {
-    // Send onboardingData to backend
     console.log("Final onboarding data:", onboardingData);
-    /*
     try {
       const response = await axios.post("http://localhost:3000/api/users/register", onboardingData);
       console.log("Registration Successful:", response.data);
@@ -57,14 +55,12 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
       // 1. Store JWT token in localStorage
       localStorage.setItem("token", response.data.token);
 
-
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {
         console.error("Unexpected Error:", error);
         alert("Registration failed, Please try again.");
     }
-    */
 
     onViewChange("dashboard");
   };
