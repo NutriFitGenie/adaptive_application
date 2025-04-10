@@ -52,13 +52,26 @@ interface ExerciseUpdate {
     userId: string;
     updatedPlan: DayUpdate[];
   }
+  interface HistoryEntry {
+    week: number;
+    plannedWeight: number;
+    actualWeight: number;
+    planned: number[];
+    actual: number[];
+    performanceRatio: string;
+    performanceClass: string;
+  }
   
+  interface ExerciseWithHistory {
+    _id: string;
+    name: string;
+    history?: HistoryEntry[];
+  }
 
 // Retrieve all workouts for a user
 export const getWorkoutList = async ({ userId }: GetWorkoutListParams): Promise<IPlannedExercise[]> => {
     // Find the record with the highest week for the user.
     const latestPlan = await plannedExercise.find({ userId }).sort({ week: -1 }).limit(1);
-    
     // If no records exist, return an empty array.
     if (!latestPlan.length) {
       return [];
@@ -99,6 +112,80 @@ export const getCurrentWorkoutList = async ({ userId }: GetWorkoutListParams): P
   // Retrieve all exercises with the highest week value.
   const exercises = await plannedExercise.find({ userId, week: highestWeekplan, day:lastday });
   return exercises;
+};
+export const getWorkoutHistory = async ({ userId }: GetWorkoutListParams): Promise<ExerciseWithHistory[]> => {
+  try {
+    const allPlan = await plannedExercise.find({ userId });
+    const allActual = await actualExercise.find({ userId });
+
+    // Map exerciseId to name from seedWorkouts
+    const allSeed = await Workout.find();
+    const nameMap: Record<string, string> = {};
+    allSeed.forEach(w => {
+      nameMap[w.name.toLowerCase()] = w.name;
+    });
+
+    const historyMap: Record<string, ExerciseWithHistory> = {};
+
+    // Helper function to classify performance
+    const classifyPerformance = (ratio: number): string => {
+      if (ratio >= 1.0) return "Excellent";
+      if (ratio >= 0.75) return "Good";
+      if (ratio >= 0.5) return "Average";
+      return "Poor";
+    };
+
+    for (const plan of allPlan) {
+      const key = `${plan.name.toLowerCase()}`;
+      const plannedReps = [
+        plan.set1Reps ?? 0,
+        plan.set2Reps ?? 0,
+        plan.set3Reps ?? 0,
+      ].filter(r => r > 0);
+
+      const matchingActual = allActual.find(
+        act => act.name.toLowerCase() === plan.name.toLowerCase() &&
+               act.week === plan.week &&
+               act.day === plan.day
+      );
+
+      // ❗ Skip this entry if actual weight is not present
+      if (!matchingActual?.weight) continue;
+
+      const actualReps = [
+        matchingActual.set1Reps ?? 0,
+        matchingActual.set2Reps ?? 0,
+        matchingActual.set3Reps ?? 0,
+      ].filter(r => r > 0);
+
+      const ratio = plannedReps.length > 0 ? actualReps.length / plannedReps.length : 0;
+      const performanceRatio = (ratio * 100).toFixed(1) + '%';
+      const performanceClass = classifyPerformance(ratio);
+
+      if (!historyMap[key]) {
+        historyMap[key] = {
+          _id: key,
+          name: nameMap[key] || plan.name,
+          history: [],
+        };
+      }
+
+      historyMap[key].history!.push({
+        week: plan.week,
+        plannedWeight: plan.weight ?? 0,
+        actualWeight: matchingActual.weight,
+        planned: plannedReps,
+        actual: actualReps,
+        performanceRatio,
+        performanceClass,
+      });
+    }
+
+    return Object.values(historyMap);
+  } catch (err) {
+    console.error("Error in getWorkoutHistory:", err);
+    throw new Error("Error fetching workout history");
+  }
 };
 
 export const updateWorkout = async ({
