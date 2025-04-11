@@ -5,7 +5,8 @@ export interface IWorkout extends Document {
   description?: string;
   category: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
-  caloriesBurn: 'low'| 'medium'| 'high'
+  caloriesBurn: 'low'| 'medium'| 'high';
+  link: String;
 }
 
 const WorkoutSchema: Schema = new Schema({
@@ -21,7 +22,8 @@ const WorkoutSchema: Schema = new Schema({
     type: String,
     enum: ['low', 'medium', 'high'],
     default: 'low'
-  }
+  },
+  link: { type: String, required: true },
 });
 
 const Workout = model<IWorkout>('Workout', WorkoutSchema);
