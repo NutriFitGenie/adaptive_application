@@ -2,6 +2,8 @@ import plannedExercise, { IPlannedExercise } from '../models/planned_workout';
 import actualExercise, { IActualExercise } from '../models/actual_workout';
 import Workout from '../models/seedWorkouts';
 import User from '../models/user';
+import { Bandit, ACTIONS, generateWeek2Plan, calculateReward } from './workoutEngine';
+
 
 interface GetWorkoutListParams {
   userId: string;
@@ -52,13 +54,26 @@ interface ExerciseUpdate {
     userId: string;
     updatedPlan: DayUpdate[];
   }
+  interface HistoryEntry {
+    week: number;
+    plannedWeight: number;
+    actualWeight: number;
+    planned: number[];
+    actual: number[];
+    performanceRatio: string;
+    performanceClass: string;
+  }
   
+  interface ExerciseWithHistory {
+    _id: string;
+    name: string;
+    history?: HistoryEntry[];
+  }
 
 // Retrieve all workouts for a user
 export const getWorkoutList = async ({ userId }: GetWorkoutListParams): Promise<IPlannedExercise[]> => {
     // Find the record with the highest week for the user.
     const latestPlan = await plannedExercise.find({ userId }).sort({ week: -1 }).limit(1);
-    
     // If no records exist, return an empty array.
     if (!latestPlan.length) {
       return [];
@@ -100,6 +115,84 @@ export const getCurrentWorkoutList = async ({ userId }: GetWorkoutListParams): P
   const exercises = await plannedExercise.find({ userId, week: highestWeekplan, day:lastday });
   return exercises;
 };
+export const getWorkoutHistory = async ({ userId }: GetWorkoutListParams): Promise<ExerciseWithHistory[]> => {
+  try {
+    const allPlan = await plannedExercise.find({ userId });
+    const allActual = await actualExercise.find({ userId });
+
+    // Map exerciseId to name from seedWorkouts
+    const allSeed = await Workout.find();
+    const nameMap: Record<string, string> = {};
+    allSeed.forEach(w => {
+      nameMap[w.name.toLowerCase()] = w.name;
+    });
+
+    const historyMap: Record<string, ExerciseWithHistory> = {};
+
+    // Helper function to classify performance
+    const classifyPerformance = (ratio: number): string => {
+      if (ratio >= 1.0) return "Excellent";
+      if (ratio >= 0.75) return "Good";
+      if (ratio >= 0.5) return "Average";
+      return "Poor";
+    };
+
+    for (const plan of allPlan) {
+      const key = `${plan.name.toLowerCase()}`;
+      const plannedReps = [
+        plan.set1Reps ?? 0,
+        plan.set2Reps ?? 0,
+        plan.set3Reps ?? 0,
+      ].filter(r => r > 0);
+
+      const matchingActual = allActual.find(
+        act => act.name.toLowerCase() === plan.name.toLowerCase() &&
+               act.week === plan.week &&
+               act.day === plan.day
+      );
+
+      // ❗ Skip this entry if actual weight is not present
+      if (!matchingActual?.weight) continue;
+
+      const actualReps = [
+        matchingActual.set1Reps ?? 0,
+        matchingActual.set2Reps ?? 0,
+        matchingActual.set3Reps ?? 0,
+      ].filter(r => r > 0);
+
+      const totalPlanned = plannedReps.reduce((a, b) => a + b, 0);
+      const totalActual = actualReps.reduce((a, b) => a + b, 0);
+      const plannedVolume = totalPlanned * (plan.weight ?? 0);
+      const actualVolume = totalActual * (matchingActual.weight ?? 0);
+      const ratio = plannedVolume > 0 ? actualVolume / plannedVolume : 0;
+      const performanceRatio = (ratio * 100).toFixed(1) + '%';
+      const performanceClass = classifyPerformance(ratio);
+
+      if (!historyMap[key]) {
+        historyMap[key] = {
+          _id: key,
+          name: nameMap[key] || plan.name,
+          history: [],
+        };
+      }
+
+      historyMap[key].history!.push({
+        week: plan.week,
+        plannedWeight: plan.weight ?? 0,
+        actualWeight: matchingActual.weight,
+        planned: plannedReps,
+        actual: actualReps,
+        performanceRatio,
+        performanceClass,
+      });
+    }
+
+    return Object.values(historyMap);
+  } catch (err) {
+    console.error("Error in getWorkoutHistory:", err);
+    throw new Error("Error fetching workout history");
+  }
+};
 
 export const updateWorkout = async ({
   userId,
@@ -108,17 +201,15 @@ export const updateWorkout = async ({
   try {
     const actualDocuments: Partial<IActualExercise>[] = [];
     let currentWeek = 1, currentDay = 1;
-    
-    // Build actual exercise documents.
+
     updatedPlan.forEach(dayPlan => {
       const dayNumber = parseInt(dayPlan.Day, 10);
       dayPlan.Exercises.forEach((exercise) => {
-        // Update current week and day based on exercise data.
         currentWeek = exercise.week;
         currentDay = dayNumber;
         actualDocuments.push({
           day: dayNumber,
-          userId: userId,
+          userId,
           name: exercise.Exercise,
           description: exercise.description,
           category: exercise.body_part,
@@ -130,49 +221,82 @@ export const updateWorkout = async ({
         });
       });
     });
-    
-    // Insert actual workout entries.
+
     const actualResults = await actualExercise.insertMany(actualDocuments);
-    
-    // If it's the user's last workout day, progress to the next adaptive week.
+
     const user = await User.findById(userId);
     if (user != null && currentDay >= user.workoutDays) {
+      const bandit = new Bandit(0.2, 5);
       const plannedDocuments: Partial<IPlannedExercise>[] = [];
-      // Find the planned exercises for the current week.
-      const transformExercises = await plannedExercise.find({ userId, week: currentWeek });
-      transformExercises.forEach((prevExercise) => {
-        // Increase weight and each rep value by 2.5 (if defined).
-        const newWeight = prevExercise.weight != null ? prevExercise.weight + 2.5 : prevExercise.weight;
-        const newSet1Reps = prevExercise.set1Reps != null ? prevExercise.set1Reps + 2.5 : prevExercise.set1Reps;
-        const newSet2Reps = prevExercise.set2Reps != null ? prevExercise.set2Reps + 2.5 : prevExercise.set2Reps;
-        const newSet3Reps = prevExercise.set3Reps != null ? prevExercise.set3Reps + 2.5 : prevExercise.set3Reps;
-        const nextWeek = prevExercise.week != null ? prevExercise.week + 1 : prevExercise.week;
-        
+
+      const plannedWorkouts = await plannedExercise.find({ userId, week: currentWeek });
+      const actualWorkouts = await actualExercise.find({ userId, week: currentWeek });
+
+      for (const plannedExercise of plannedWorkouts) {
+        const matchingActual = actualWorkouts.find(a => a.name === plannedExercise.name && a.day === plannedExercise.day);
+
+        if (!matchingActual) continue;
+
+        const plannedTotalVolume = ((plannedExercise.set1Reps ?? 0) + (plannedExercise.set2Reps ?? 0) + (plannedExercise.set3Reps ?? 0)) * (plannedExercise.weight ?? 0);
+        const actualTotalVolume = ((matchingActual.set1Reps ?? 0) + (matchingActual.set2Reps ?? 0) + (matchingActual.set3Reps ?? 0)) * (matchingActual.weight ?? 0);
+
+        const performance = {
+          repRatio: (
+            ((matchingActual.set1Reps ?? 0) + (matchingActual.set2Reps ?? 0) + (matchingActual.set3Reps ?? 0)) /
+            ((plannedExercise.set1Reps ?? 0) + (plannedExercise.set2Reps ?? 0) + (plannedExercise.set3Reps ?? 0))
+          ),
+          weightRatio: (matchingActual.weight ?? 0) / (plannedExercise.weight ?? 1),
+          setRatio: 1, // For simplicity, assuming full set completion
+        };
+
+        const userContext = {
+          age: 25,
+          goal:"fat_loss"
+        };
+
+        const { plan: newPlan, action } = generateWeek2Plan({
+          weight: plannedExercise.weight ?? 0,
+          reps: plannedExercise.set1Reps ?? 6, // assume rep = set1Reps
+        }, userContext, performance, bandit);
+
+        const reward = calculateReward(
+          { totalVolume: actualTotalVolume },
+          { totalVolume: plannedTotalVolume }
+        );
+        const context = [
+          userContext.age / 100,
+          userContext.goal === "muscle_gain" ? 1 : 0,
+          performance.repRatio,
+          performance.weightRatio,
+          performance.setRatio
+        ];
+        bandit.updateModel(action, context, reward);
+
         plannedDocuments.push({
-          day: prevExercise.day,
-          userId: userId,
-          oneRepMax: prevExercise.oneRepMax,
-          name: prevExercise.name,
-          description: prevExercise.description,
-          category: prevExercise.category,
-          weight: newWeight,
-          set1Reps: newSet1Reps,
-          set2Reps: newSet2Reps,
-          set3Reps: newSet3Reps,
-          week: nextWeek
+          day: plannedExercise.day,
+          userId,
+          oneRepMax: plannedExercise.oneRepMax,
+          name: plannedExercise.name,
+          description: plannedExercise.description,
+          category: plannedExercise.category,
+          weight: newPlan.weight,
+          set1Reps: newPlan.reps,
+          set2Reps: newPlan.reps,
+          set3Reps: newPlan.reps,
+          week: plannedExercise.week + 1
         });
-      });
-      
-      // Insert the new planned exercises.
-      const plannedResults = await plannedExercise.insertMany(plannedDocuments);
+      }
+
+      await plannedExercise.insertMany(plannedDocuments);
     }
-    
+
     return actualResults ? true : false;
   } catch (error) {
     console.error("Error updating workout:", error);
     throw error;
   }
 };
+
 
 // Delete a specific workout for a user
 export const deleteWorkout = async ({ id, userId }: DeleteWorkoutParams): Promise<IPlannedExercise | null> => {
@@ -182,58 +306,83 @@ export const deleteWorkout = async ({ id, userId }: DeleteWorkoutParams): Promis
 
 // Generate a testing plan for the week based on user info and workout data.
 export const generateTestingPlan = async ({ userId }: GetWorkoutListParams): Promise<TestingPlan[]> => {
-  // Fetch workouts from the seed workouts DB - these serve as the strength exercises.
   const csvExercises = await Workout.find();
-
-  // Fetch the user info. Here we assume the User document contains properties:
-  // experienceLevel (e.g., "beginner", "medium", "pro"), workoutDays (number), and fitnessGoal (e.g., "fat_loss").
   const user = await User.findById(userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
-  // Destructure the necessary user properties.
-  const experienceLevel = user.experienceLevel;
-  const workoutDays = user.workoutDays;
-  const fitnessGoal = user.fitnessGoal;
-  // Filter strength exercises based on the user's experience level.
-  let selectedExercises: string | any[] = [];
+  if (!user) throw new Error("User not found");
+
+  const { experienceLevel, workoutDays, fitnessGoal } = user;
+  console.log("User Info:", user);
+  console.log("Experience Level:", experienceLevel); 
+  console.log("Workout Days:", workoutDays);
+  console.log("Fitness Goal:", fitnessGoal);
+  // Filter by experience level
+  let filteredExercises: any[] = [];
   if (experienceLevel === "beginner") {
-    selectedExercises = csvExercises.filter((ex: any) => ex.difficulty.toLowerCase() === "beginner");
+    filteredExercises = csvExercises.filter(ex => ex.difficulty.toLowerCase() === "beginner");
   } else if (experienceLevel === "medium") {
-    selectedExercises = csvExercises.filter((ex: any) => {
+    filteredExercises = csvExercises.filter(ex => {
       const d = ex.difficulty.toLowerCase();
       return d === "intermediate" || d === "beginner";
     });
   } else if (experienceLevel === "pro") {
-    selectedExercises = csvExercises; // Use all exercises.
+    filteredExercises = csvExercises;
   }
 
-  // Build the plan by cycling through the selected exercises.
+  // If fat_loss, filter exercises by caloriesBurn
+  let exercisesPerDay = fitnessGoal === "fat_loss" ? 3 : 4;
+  if (fitnessGoal === "fat_loss") {
+    filteredExercises = filteredExercises.filter(ex => {
+      const burn = ex.caloriesBurn?.toLowerCase?.();
+      return burn === "medium" || burn === "high";
+    });
+  }
+
+  // Shuffle for randomness
+  const shuffleArray = (arr: any[]) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  };
+  shuffleArray(filteredExercises);
+  console.log("filteredExercises Goal:", filteredExercises);
+  // Check if enough unique exercises exist
+  const totalRequired = workoutDays * exercisesPerDay;
+  if (filteredExercises.length < totalRequired) {
+    throw new Error("Not enough unique exercises to generate a complete plan without duplicates.");
+  }
+
+  // Build the plan
   const plan: TestingPlan[] = [];
+  const usedExerciseNames = new Set<string>();
   let exerciseIndex = 0;
+
   for (let day = 1; day <= workoutDays; day++) {
     const dayPlan: TestingPlan = {
       Day: `${day}`,
       Exercises: []
     };
 
-    // Add 3 strength exercises per day.
-    for (let i = 0; i < 3; i++) {
-      if (exerciseIndex >= selectedExercises.length) {
-        exerciseIndex = 0;
-      }
-      const exercise = selectedExercises[exerciseIndex];
+    let count = 0;
+    while (count < exercisesPerDay && exerciseIndex < filteredExercises.length) {
+      const exercise = filteredExercises[exerciseIndex++];
+      const nameKey = exercise.name.toLowerCase();
+
+      if (usedExerciseNames.has(nameKey)) continue;
+
+      usedExerciseNames.add(nameKey);
       dayPlan.Exercises.push({
-        name: exercise.name,            // Mapped from Workout schema.
+        name: exercise.name,
         description: exercise.description,
-        category: exercise.category,       // Using 'category' as a substitute for body part.
-        oneRepMax: ''                       // Placeholder for user input.
+        category: exercise.category,
+        oneRepMax: ''
       });
-      exerciseIndex++;
+      count++;
     }
 
     plan.push(dayPlan);
   }
+
   return plan;
 };
 

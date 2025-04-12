@@ -23,8 +23,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const savedView = (localStorage.getItem("dashboardView") as DashboardView) || "home";
   const [view, setView] = useState<DashboardView>(savedView);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-
-  // Retrieve userData from localStorage
   const userData = localStorage.getItem("userData");
   const parsedUserData = userData ? JSON.parse(userData) : null;
 

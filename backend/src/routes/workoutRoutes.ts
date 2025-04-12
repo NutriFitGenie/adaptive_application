@@ -7,11 +7,14 @@ import {
   generateTestingPlanController,
   updateTestingPlanController,
   getTestingWeekStatusController,
-  getCurrentWorkoutListController
+  getCurrentWorkoutListController,
+  getWorkoutHistoryController
 } from '../controllers/workoutController';
 
 // Get the workout list for a user
 workoutRouter.get('/getWorkout', getWorkoutListController);
+
+workoutRouter.get('/getWorkoutHistory', getWorkoutHistoryController);
 
 workoutRouter.get('/getCurrentWorkout', getCurrentWorkoutListController);
 

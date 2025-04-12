@@ -6,54 +6,95 @@ import User, { IUser } from '../models/UserModel';
  * @param data - An object containing username, email, password, and additional fields such as height, weight, dietary preferences, allergies, and fitness goal.
  * @returns The newly created user.
  */
-export const createUser = async (data: {
-  username: string;
-  email: string;
-  password: string;
-  height?: number;
-  weight?: number;
+export interface CreateUserInput {
+  // From HEAD version
+  username?: string;
   dietaryPreferences?: string;
   allergies?: string;
   fitnessGoal?: string;
-}): Promise<IUser> => {
-  const mappedData = {
-    name: data.username, // Model expects "name"
+  // From second branch
+  firstName?: string;
+  lastName?: string;
+  age?: number;
+  gender?: string;
+  email: string;
+  password: string;
+  goal?: string;
+  fitnessLevel?: string;
+  daysPerWeek?: number;
+  weight?: number;
+  height?: number;
+  neck?: number;
+  waist?: number;
+  activityLevel?: string;
+  units?: string;
+  healthConditions?: string;
+}
+
+// This function assumes that the password has not yet been hashed.
+// (If not, then hashing could be done in a controller before calling createUser.)
+export const createUser = async (data: CreateUserInput): Promise<IUser> => {
+  // Determine the final username: use `username` if provided,
+  // otherwise use the combination of firstName and lastName.
+  const finalUsername = data.username || `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim();
+
+  // Process dietaryPreferences and allergies: if provided as comma-separated strings,
+  // convert them to arrays.
+  const processStringField = (field?: string): string[] =>
+    field ? field.split(",").map((s) => s.trim()) : [];
+
+  const dietaryArray = processStringField(data.dietaryPreferences);
+  const allergiesArray = processStringField(data.allergies);
+
+  // Determine the fitness goal using either fitnessGoal (HEAD) or goal (second branch),
+  // with a default of "weight_loss".
+  const finalFitnessGoal = data.fitnessGoal || data.goal || "weight_loss";
+
+  // Build the user data object according to the model's requirements.
+  const userData = {
+    name: finalUsername, // your model expects "name"
     email: data.email,
-    password: data.password,
-    // For preferences, convert comma-separated strings into arrays
+    password: data.password, // ensure password is hashed before or after this function as appropriate
     preferences: {
-      dietary: data.dietaryPreferences
-        ? data.dietaryPreferences.split(",").map((s) => s.trim())
-        : [],
-      allergies: data.allergies
-        ? data.allergies.split(",").map((s) => s.trim())
-        : [],
-      excludedIngredients: [] // default empty array; adjust as needed
+      dietary: dietaryArray,
+      allergies: allergiesArray,
+      excludedIngredients: [] as string[], // default empty array
     },
-    // For fitnessGoals, use the provided fitnessGoal and weight as target weight
     fitnessGoals: {
-      goal: (data.fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance") || "weight_loss",
-      targetWeight: data.weight || 0,
-      weeklyCommitment: 3 // default weekly commitment; adjust if needed
+      goal: finalFitnessGoal as "weight_loss" | "muscle_gain" | "maintenance",
+      targetWeight: data.weight ? Number(data.weight) : 0,
+      weeklyCommitment: data.daysPerWeek ? Number(data.daysPerWeek) : 3,
+      fitnessLevel: data.fitnessLevel || null,
     },
-    // Default for progress is an empty array
+    age: data.age,
+    gender: data.gender,
+    neck: data.neck,
+    waist: data.waist,
+    activityLevel: data.activityLevel,
+    units: data.units,
+    healthConditions: data.healthConditions,
     progress: [],
-    // Default nutritionalRequirements; update later based on actual recommendations
     nutritionalRequirements: {
       dailyCalories: 0,
       protein: 0,
       carbs: 0,
-      fats: 0
+      fats: 0,
     },
-    // Initialize preferredRecipes as an empty array
-    preferredRecipes: [] as any
+    preferredRecipes: [] as any,
+    height: data.height ? Number(data.height) : undefined,
+    weight: data.weight ? Number(data.weight) : undefined,
+    firstName: data.firstName,
+    lastName: data.lastName,
   };
 
-  console.log(mappedData, "mapped data");
-  const user = new User(mappedData);
-  console.log(user, "user instance");
+  console.log(userData, "Mapped User Data");
+
+  const user = new User(userData);
+  console.log(user, "User instance created");
+
   return await user.save();
-  };
+};
+
 
 /**
  * Retrieve a single user by their ID.

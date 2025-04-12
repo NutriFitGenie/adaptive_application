@@ -14,66 +14,132 @@ import config from '../config/env.config';
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Extract additional fields from the request body
+    // Extract fields from the request body (merging both versions)
     const {
+      // From HEAD version
       username,
+      dietaryPreferences,
+      allergies,
+      fitnessGoal,
+      
+      // From second branch
+      firstName,
+      lastName,
+      age,
+      gender,
       email,
       password,
-      height,             // in centimeters
-      weight,             // in kilograms (will be used as targetWeight)
-      dietaryPreferences, // e.g., comma-separated string e.g., "vegan, paleo" or an array
-      allergies,          // e.g., comma-separated string e.g., "peanuts, milk" or an array
-      fitnessGoal         // should be one of 'weight_loss', 'muscle_gain', 'maintenance'
+      goal,
+      fitnessLevel,
+      daysPerWeek,
+      weight,
+      height,
+      neck,
+      waist,
+      activityLevel,
+      units,
+      healthConditions
     } = req.body;
+    
+    // Check if the user already exists
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+       res.status(400).json({ error: "Email already in use" });
+     return;
+    }
     
     // Hash the password
     const hashedPassword: string = await bcrypt.hash(password, 10);
     console.log(req.body, "req.body");
 
-    // Map the flat incoming data into the nested structure your model expects.
-    // Check if dietaryPreferences and allergies are arrays already.
+    // Determine the display name: use "username" if provided, otherwise combine firstName and lastName.
+    const name = username || `${firstName || ""} ${lastName || ""}`.trim();
+    
+    // Process dietary preferences and allergies.
+    const processField = (field: any) => {
+      if (Array.isArray(field)) return field;
+      return field ? field.split(",").map((s: string) => s.trim()) : [];
+    };
+
+    const preferences = {
+      dietary: processField(dietaryPreferences),
+      allergies: processField(allergies),
+      excludedIngredients: [] // default empty array
+    };
+
+    // Choose the fitness goal; if fitnessGoal (from HEAD) is provided, it takes precedence, otherwise use "goal".
+    const combinedGoal = fitnessGoal || goal || "weight_loss";
+
+    // Build fitnessGoals object.
+    const fitnessGoals = {
+      goal: combinedGoal,
+      targetWeight: weight ? Number(weight) : 0,
+      weeklyCommitment: daysPerWeek ? Number(daysPerWeek) : 3,
+      fitnessLevel
+    };
+
+    // Assemble the complete user data object.
     const userData = {
-      name: username, // mapping 'username' to 'name'
+      name,
+      firstName,
+      lastName,
+      age,
+      gender,
       email,
       password: hashedPassword,
-      preferences: {
-        dietary: Array.isArray(dietaryPreferences)
-          ? dietaryPreferences
-          : dietaryPreferences
-            ? dietaryPreferences.split(",").map((s: string) => s.trim())
-            : [],
-        allergies: Array.isArray(allergies)
-          ? allergies
-          : allergies
-            ? allergies.split(",").map((s: string) => s.trim())
-            : [],
-        excludedIngredients: [] // default empty array
-      },
-      fitnessGoals: {
-        goal: (fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance") || "weight_loss",
-        targetWeight: weight ? Number(weight) : 0,
-        weeklyCommitment: 3 // default weekly commitment; update as needed
-      },
+      preferences,
+      fitnessGoals,
+      neck,
+      waist,
+      activityLevel,
+      units,
+      healthConditions,
       progress: [],
       nutritionalRequirements: {
         dailyCalories: 0,
         protein: 0,
         carbs: 0,
-        fats: 0
+        fats: 0,
       },
       preferredRecipes: [] as any,
-      // Optionally, store height if your model supports it.
-      height: height ? Number(height) : undefined
+      height: height ? Number(height) : undefined,
     };
 
-    // Create a new User instance and save it directly to the database
-    const newUser = await new User(userData).save();
+    // Create a new user using your service function or model.
+    const newUser = await createUser(userData);
     console.log(newUser, "newUser");
 
-    res.status(201).json(newUser);
+    // Ensure the JWT_SECRET is defined.
+    if (!config.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not defined in environment variables");
+    }
+
+    // Generate a JWT token.
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      config.JWT_SECRET as jwt.Secret,
+      { expiresIn: config.JWT_TOKEN_EXPIRE as string }
+    );
+
+    // Build the response object with selected user fields.
+    const userResponse = {
+      id: newUser._id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      goal: newUser.fitnessGoals.goal,
+      fitnessLevel: newUser.fitnessGoals.fitnessLevel,
+      // Add additional fields as needed
+    };
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: userResponse,
+    });
   } catch (error) {
     console.error("Error storing user:", error);
-    res.status(500).json({ error: 'Error creating user' });
+    res.status(500).json({ error: "Error creating user" });
   }
 };
 
@@ -83,11 +149,6 @@ export const loginUserController = async (req: Request, res: Response): Promise<
     const getUser = await getUserByEmail(email);
     console.log(getUser);
     // All data if you want send during logging to store in local storage add here 
-    const userData = {
-      id : getUser?.id,
-      username : getUser?.username,
-      email : getUser?.email,
-    }
     if (!getUser) {
       return res.status(400).json({ message: 'User not found.' });
     }
@@ -118,7 +179,7 @@ export const loginUserController = async (req: Request, res: Response): Promise<
       }
     );
 
-    res.status(201).json({ message: 'Login successful.', token:token, userData:userData });
+    res.status(201).json({ message: 'Login successful.', token:token, userData: JSON.stringify(getUser)});
   } catch (error) {
     res.status(500).json({ message: 'Internal server error.', error });
   }

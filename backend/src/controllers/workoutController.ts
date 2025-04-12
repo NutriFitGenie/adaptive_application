@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getWorkoutList, updateWorkout, deleteWorkout ,generateTestingPlan,updateTestingPlan,getTestingWeekStatus,getCurrentWorkoutList} from '../services/workoutService';
+import { getWorkoutList, updateWorkout, deleteWorkout ,generateTestingPlan,updateTestingPlan,getTestingWeekStatus,getCurrentWorkoutList,getWorkoutHistory} from '../services/workoutService';
 
 // Get Workout List for a User
 export const getWorkoutListController = async (req: Request, res: Response) => {
@@ -22,6 +22,19 @@ export const getCurrentWorkoutListController = async (req: Request, res: Respons
       return res.status(400).json({ message: 'userId query parameter is required' });
     }
     const workoutList = await getCurrentWorkoutList({ userId: userId as string });
+    res.status(200).json(workoutList);
+  } catch (error) {
+    res.status(500).json({ error: 'Error retrieving workout list' });
+  }
+};
+
+export const getWorkoutHistoryController = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ message: 'userId query parameter is required' });
+    }
+    const workoutList = await getWorkoutHistory({ userId: userId as string });
     res.status(200).json(workoutList);
   } catch (error) {
     res.status(500).json({ error: 'Error retrieving workout list' });
