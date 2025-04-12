@@ -6,14 +6,11 @@ import User, { IUser } from '../models/user';
  * @param data - An object containing username, email, and password.
  * @returns The newly created user.
  */
-export const createUser = async (data: {
-  username: string;
-  email: string;
-  password: string;
-}): Promise<IUser> => {
-  const user = new User(data);
+export const createUser = async (userData: Partial<IUser>) => {
+  const user = new User(userData);
   return await user.save();
 };
+
 
 /**
  * Retrieve a single user by their ID.

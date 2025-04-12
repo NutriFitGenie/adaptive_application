@@ -1,81 +1,102 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
 
-interface RegisterFormValues {
-  username: string;
-  email: string;
-  password: string;
-}
+import LogoLarge from "../assets/LogoLarge.svg";
+import "../styles/onboarding.css";
+
+import Registration from "./OnboardingViews/0Registration";
+import FitnessGoals from "./OnboardingViews/1FitnessGoals";
+import BodyMetrics from "./OnboardingViews/2BodyMetrics";
+import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
+import HealthConditions from "./OnboardingViews/4HealthConditions";
+import Complete from "./OnboardingViews/5Complete";
 
 interface RegisterProps {
-  // Function passed from parent (e.g., App) to change the view
   onViewChange: (view: "login" | "register" | "dashboard") => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
-  const [error, setError] = useState<string | null>(null);
+interface OnboardingData {
+  firstName?: string;
+  lastName?: string;
+  age?: string;
+  gender?: string;
+  email?: string;
+  password?: string;
+  goal?: string;
+  fitnessLevel?: string;
+  daysPerWeek?: number;
+  weight?: number;
+  height?: number;
+  neck?: number;
+  waist?: number;
+  activityLevel?: string;
+  units?: "metric" | "imperial";
+  dietaryPreferences?: string[];
+  healthConditions?: string[];
+}
 
-  const initialValues: RegisterFormValues = {
-    username: "",
-    email: "",
-    password: "",
+const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
+  const [step, setStep] = useState(0);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+
+  const handleNext = (data: Partial<OnboardingData>) => {
+    setOnboardingData((prev) => ({ ...prev, ...data }));
+    setStep((prev) => prev + 1);
   };
 
-  const validationSchema = Yup.object({
-    username: Yup.string().required("Username is required"),
-    email: Yup.string().email("Invalid email format").required("Email is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-  });
-
-  const handleSubmit = async (values: RegisterFormValues) => {
+  const handleFinish = async () => {
+    console.log("Final onboarding data:", onboardingData);
     try {
-      // .env
-      const response = await axios.post("http://localhost:3000/api/users/register", values);
+      const response = await axios.post("http://localhost:3000/api/users/register", onboardingData);
       console.log("Registration Successful:", response.data);
 
-      // After successful registration, navigate to "login" view
-      onViewChange("login");
-    } catch {
-      setError("Registration failed. Please try again.");
+      // Example response: { message: 'Login successful.', token: '...', user: {...} }
+
+      // 1. Store JWT token in localStorage
+      localStorage.setItem("token", response.data.token);
+
+      // 3. Navigate to the dashboard
+      onViewChange("dashboard");
+    } catch (error) {
+        console.error("Unexpected Error:", error);
+        alert("Registration failed, Please try again.");
+    }
+
+    onViewChange("dashboard");
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />
+      case 1:
+        return <FitnessGoals onNext={(data) => handleNext(data)} />;
+      case 2:
+        return <BodyMetrics onNext={(data) => handleNext(data)} />;
+      case 3:
+        return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
+      case 4:
+        return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
+      case 5:
+        return <Complete onFinish={handleFinish} />;
+      default:
+        return null;
     }
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="flex w-full h-full overflow-y-auto">
+      {/* Left Side (form content) */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 px-6 py-10">
+        {renderStep()}
+      </div>
 
-      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-        {() => (
-          <Form>
-            <div>
-              <label>Username:</label>
-              <Field type="text" name="username" />
-              <ErrorMessage name="username" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <div>
-              <label>Email:</label>
-              <Field type="email" name="email" />
-              <ErrorMessage name="email" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <div>
-              <label>Password:</label>
-              <Field type="password" name="password" />
-              <ErrorMessage name="password" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <button type="submit">Register</button>
-          </Form>
-        )}
-      </Formik>
-
-      <p>
-        Already have an account?{" "}
-        <button type="button" onClick={() => onViewChange("login")}>
-          Login
-        </button>
-      </p>
+      {/* Right Side (branding/logo) */}
+      <div className="flex flex-col h-full lg:w-1/2 w-0">
+        <div className="flex justify-end w-full">
+          <img src={LogoLarge} alt="Large Logo" />
+        </div>
+      </div>
     </div>
   );
 };
