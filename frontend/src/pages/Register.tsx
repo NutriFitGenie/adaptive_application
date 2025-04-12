@@ -1,168 +1,186 @@
-// src/pages/Register.tsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import axios from 'axios';
 
-// Change the prop type to the union type
-const Register: React.FC<{ onViewChange: (view: "login" | "register" | "dashboard") => void }> = ({ onViewChange }) => {
-  const navigate = useNavigate();
+interface RegisterProps {
+  apiBase: string;
+  onRegisterSuccess: (token: string, user: any) => void;
+  onLoginClick: () => void;
+}
+
+const Register: React.FC<RegisterProps> = ({ apiBase, onRegisterSuccess, onLoginClick }) => {
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    height: "",
-    weight: "",
-    dietaryPreferences: "", // Enter as comma separated string (e.g., "vegan, paleo")
-    allergies: "",          // Enter as comma separated string (e.g., "peanuts, milk")
-    fitnessGoal: "weight_loss", // Options: weight_loss, muscle_gain, maintenance
+    username: '',
+    email: '',
+    password: '',
+    age: '',
+    gender: 'male',
+    height: '',
+    weight: '',
+    activityLevel: 'moderate',
+    dietaryPreferences: '',
+    allergies: '',
+    fitnessGoal: 'weight_loss'
   });
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:3000/api/users/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          // Convert height & weight to numbers (or let the backend handle conversion)
-          height: parseFloat(formData.height),
-          weight: parseFloat(formData.weight),
-          // Convert comma-separated strings into arrays
-          dietaryPreferences: formData.dietaryPreferences
-            ? formData.dietaryPreferences.split(",").map((s) => s.trim())
-            : [],
-          allergies: formData.allergies
-            ? formData.allergies.split(",").map((s) => s.trim())
-            : [],
-          fitnessGoal: formData.fitnessGoal,
-        }),
+      const res = await axios.post(`${apiBase}/api/users/register`, {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        age: parseInt(formData.age),
+        gender: formData.gender,
+        height: parseFloat(formData.height),
+        weight: parseFloat(formData.weight),
+        activityLevel: formData.activityLevel,
+        dietaryPreferences: formData.dietaryPreferences,
+        allergies: formData.allergies,
+        fitnessGoal: formData.fitnessGoal
       });
-      if (!response.ok) {
-        const msg = await response.text();
-        throw new Error(msg || "Registration failed");
-      }
-      const data = await response.json();
-      console.log(data, "User registered successfully");
       
-      setSuccess("User registered successfully!");
-      setError("");
-      // Optionally navigate to login or dashboard
-      onViewChange("login");
-      navigate("/login");
+      onRegisterSuccess(res.data.token, res.data.user);
     } catch (err: any) {
-      setError(err.message || "Registration error");
-      setSuccess("");
+      setError(err.response?.data?.error || 'Registration failed. Please try again.');
     }
   };
-
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
-      {success && <p style={{ color: "green" }}>{success}</p>}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Username:
+    <div className="auth-container">
+      <h2>Create New Account</h2>
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label>UserName:</label>
           <input
             type="text"
-            name="username"
             value={formData.username}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, username: e.target.value})}
             required
           />
-        </label>
-        <br />
-        <label>
-          Email:
+        </div>
+
+        <div className="form-group">
+          <label>Email:</label>
           <input
             type="email"
-            name="email"
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
             required
           />
-        </label>
-        <br />
-        <label>
-          Password:
+        </div>
+
+        <div className="form-group">
+          <label>Password:</label>
           <input
             type="password"
-            name="password"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
             required
           />
-        </label>
-        <br />
-        <label>
-          Height (cm):
+        </div>
+
+        <div className="form-group">
+          <label>Age:</label>
           <input
             type="number"
-            name="height"
-            value={formData.height}
-            onChange={handleChange}
+            value={formData.age}
+            onChange={(e) => setFormData({...formData, age: e.target.value})}
             required
           />
-        </label>
-        <br />
-        <label>
-          Weight (kg):
-          <input
-            type="number"
-            name="weight"
-            value={formData.weight}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          Dietary Preferences (comma separated):
-          <input
-            type="text"
-            name="dietaryPreferences"
-            value={formData.dietaryPreferences}
-            onChange={handleChange}
-            placeholder="e.g., vegan, paleo"
-          />
-        </label>
-        <br />
-        <label>
-          Allergies (comma separated):
-          <input
-            type="text"
-            name="allergies"
-            value={formData.allergies}
-            onChange={handleChange}
-            placeholder="e.g., peanuts, milk"
-          />
-        </label>
-        <br />
-        <label>
-          Fitness Goal:
+        </div>
+
+        <div className="form-group">
+          <label>Gender:</label>
           <select
-            name="fitnessGoal"
+            value={formData.gender}
+            onChange={(e) => setFormData({...formData, gender: e.target.value})}
+          >
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Height (cm):</label>
+          <input
+            type="number"
+            step="0.1"
+            value={formData.height}
+            onChange={(e) => setFormData({...formData, height: e.target.value})}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Weight (kg):</label>
+          <input
+            type="number"
+            step="0.1"
+            value={formData.weight}
+            onChange={(e) => setFormData({...formData, weight: e.target.value})}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Activity Level:</label>
+          <select
+            value={formData.activityLevel}
+            onChange={(e) => setFormData({...formData, activityLevel: e.target.value})}
+          >
+            <option value="sedentary">Sedentary</option>
+            <option value="light">Light Exercise</option>
+            <option value="moderate">Moderate Exercise</option>
+            <option value="active">Active</option>
+            <option value="very_active">Very Active</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label>Dietary Preferences (comma separated):</label>
+          <input
+            type="text"
+            value={formData.dietaryPreferences}
+            onChange={(e) => setFormData({...formData, dietaryPreferences: e.target.value})}
+            placeholder="e.g., vegetarian, gluten-free"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Allergies (comma separated):</label>
+          <input
+            type="text"
+            value={formData.allergies}
+            onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+            placeholder="e.g., nuts, dairy"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Fitness Goal:</label>
+          <select
             value={formData.fitnessGoal}
-            onChange={handleChange}
+            onChange={(e) => setFormData({...formData, fitnessGoal: e.target.value})}
           >
             <option value="weight_loss">Weight Loss</option>
             <option value="muscle_gain">Muscle Gain</option>
             <option value="maintenance">Maintenance</option>
           </select>
-        </label>
-        <br />
-        <button type="submit">Register</button>
+        </div>
+
+        {error && <p className="error-message">{error}</p>}
+
+        <button type="submit" className="auth-button">
+          Register
+        </button>
+
+        <p className="auth-switch">
+          Already have an account?{' '}
+          <button type="button" onClick={onLoginClick} className="switch-button">
+            Login here
+          </button>
+        </p>
       </form>
     </div>
   );

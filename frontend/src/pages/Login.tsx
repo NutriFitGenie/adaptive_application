@@ -1,78 +1,68 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import React, { useState } from 'react';
+import axios from 'axios';
 
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
-
-// Props from parent
 interface LoginProps {
-  onViewChange: (view: "login" | "register" | "dashboard") => void;
+  apiBase: string;
+  onLoginSuccess: (token: string, user: any) => void;
+  onRegisterClick: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onViewChange }) => {
-  const [error, setError] = useState<string | null>(null);
+const Login: React.FC<LoginProps> = ({ apiBase, onLoginSuccess, onRegisterClick }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const initialValues: LoginFormValues = {
-    email: "",
-    password: "",
-  };
-
-  const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email format").required("Email is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-  });
-
-  const handleSubmit = async (values: LoginFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/api/users/login", values);
-      console.log("Login Successful:", response.data);
-
-      // Example response: { message: 'Login successful.', token: '...', user: {...} }
-
-      // 1. Store JWT token in localStorage
-      localStorage.setItem("token", response.data.token); 
-
-
-      // 3. Navigate to the dashboard
-      onViewChange("dashboard");
-    } catch (err) {
-      setError("Invalid email or password.");
+      const res = await axios.post(`${apiBase}/api/users/login`, {
+        email,
+        password
+      });
+      
+      onLoginSuccess(res.data.token, res.data.user);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="auth-container">
+      <h2>Nutrition Tracker Login</h2>
+      <form onSubmit={handleSubmit} className="auth-form">
+        <div className="form-group">
+          <label>Email:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-        {() => (
-          <Form>
-            <div>
-              <label>Email:</label>
-              <Field type="email" name="email" />
-              <ErrorMessage name="email" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <div>
-              <label>Password:</label>
-              <Field type="password" name="password" />
-              <ErrorMessage name="password" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <button type="submit">Login</button>
-          </Form>
-        )}
-      </Formik>
+        <div className="form-group">
+          <label>Password:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
-      <p>
-        Don&apos;t have an account?{" "}
-        <button onClick={() => onViewChange("register")} style={{ cursor: "pointer" }}>
-          Register
+        {error && <p className="error-message">{error}</p>}
+
+        <button type="submit" className="auth-button">
+          Login
         </button>
-      </p>
+
+        <p className="auth-switch">
+          Don't have an account?{' '}
+          <button type="button" onClick={onRegisterClick} className="switch-button">
+            Register here
+          </button>
+        </p>
+      </form>
     </div>
   );
 };

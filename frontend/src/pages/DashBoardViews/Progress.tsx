@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 interface WeeklyProgressFormProps {
   apiBase: string;
+  token: string;
 }
 
-const WeeklyProgressForm: React.FC<WeeklyProgressFormProps> = ({ apiBase }) => {
+const WeeklyProgressForm: React.FC<WeeklyProgressFormProps> = ({ apiBase, token }) => {
   const [formData, setFormData] = useState({
-    userId: '',
     weight: '',
+    bodyFat: '',
     waist: '',
-    otherMeasurements: '',
+    hips: '',
+    chest: ''
   });
   const [responseMsg, setResponseMsg] = useState('');
 
@@ -21,61 +24,116 @@ const WeeklyProgressForm: React.FC<WeeklyProgressFormProps> = ({ apiBase }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${apiBase}/weeklyprogress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      const res = await axios.post(`${apiBase}/api/users/progress`, {
+        metrics: {
+          weight: parseFloat(formData.weight),
+          bodyFat: formData.bodyFat ? parseFloat(formData.bodyFat) : undefined,
+          measurements: {
+            waist: parseFloat(formData.waist),
+            hips: parseFloat(formData.hips),
+            chest: parseFloat(formData.chest)
+          }
+        }
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
-      const data = await res.json();
-      setResponseMsg(`Weekly progress saved: ${JSON.stringify(data, null, 2)}`);
+      
+      setResponseMsg(`Weekly progress updated! New recommendations generated for week ${res.data.week}`);
     } catch (error: any) {
-      setResponseMsg(`Error: ${error.message}`);
+      setResponseMsg(`Error: ${error.response?.data?.error || error.message}`);
     }
   };
 
   return (
-    <div>
-      <h3>Submit Weekly Progress</h3>
+    <div className="progress-form">
+      <h3>Weekly Progress Update</h3>
       <form onSubmit={handleSubmit}>
-        <label>
-          User ID:
-          <input name="userId" value={formData.userId} onChange={handleChange} required />
-        </label>
-        <br />
-        <label>
-          Weight (kg):
-          <input
-            type="number"
-            name="weight"
-            value={formData.weight}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          Waist (cm):
-          <input
-            type="number"
-            name="waist"
-            value={formData.waist}
-            onChange={handleChange}
-          />
-        </label>
-        <br />
-        <label>
-          Other Measurements:
-          <input
-            name="otherMeasurements"
-            value={formData.otherMeasurements}
-            onChange={handleChange}
-            placeholder="optional"
-          />
-        </label>
-        <br />
-        <button type="submit">Submit Progress</button>
+        <div className="form-group">
+          <label>
+            Weight (kg):
+            <input
+              type="number"
+              step="0.1"
+              name="weight"
+              value={formData.weight}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
+
+        <div className="form-group">
+          <label>
+            Body Fat (%):
+            <input
+              type="number"
+              step="0.1"
+              name="bodyFat"
+              value={formData.bodyFat}
+              onChange={handleChange}
+            />
+          </label>
+        </div>
+
+        <h4>Body Measurements (cm)</h4>
+        <div className="form-group">
+          <label>
+            Waist:
+            <input
+              type="number"
+              step="0.1"
+              name="waist"
+              value={formData.waist}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
+
+        <div className="form-group">
+          <label>
+            Hips:
+            <input
+              type="number"
+              step="0.1"
+              name="hips"
+              value={formData.hips}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
+
+        <div className="form-group">
+          <label>
+            Chest:
+            <input
+              type="number"
+              step="0.1"
+              name="chest"
+              value={formData.chest}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        </div>
+
+        <button type="submit" className="submit-btn">
+          Submit Progress
+        </button>
       </form>
-      {responseMsg && <pre>{responseMsg}</pre>}
+
+      {responseMsg && (
+        <div className="response-message">
+          {responseMsg.includes("Error") ? (
+            <p className="error">{responseMsg}</p>
+          ) : (
+            <p className="success">{responseMsg}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,55 +1,118 @@
-import { IUser } from '../../models/UserModel'; // Verify your path
+import { IUser } from '../../models/UserModel';
+import User from '../../models/UserModel';
 
 export class ProgressAnalyzer {
-  static analyzeProgress(user: IUser): void {
+  static async initializeWeek(user: IUser, weekNumber: number): Promise<void> {
+    user.progress.push({
+      week: weekNumber,
+      weight: user.fitnessGoals.targetWeight, // Initial weight
+      bodyFat: 0,
+      measurements: {
+        waist: 0,
+        hips: 0,
+        chest: 0
+      }
+    });
+    
+    await user.save();
+  }
+
+  static async analyzeProgress(user: IUser): Promise<void> {
     if (user.progress.length < 2) return;
 
-    const latest = user.progress[user.progress.length - 1];
-    const previous = user.progress[user.progress.length - 2];
-    
-    const weightChange = latest.weight - previous.weight;
-    const weeklyChange = weightChange / ((latest.date.getTime() - previous.date.getTime()) / (1000 * 3600 * 24 * 7));
+    const currentWeek = user.progress.length;
+    const current = user.progress[currentWeek - 1];
+    const previous = user.progress[currentWeek - 2];
 
+    // Calculate weight change
+    const weightChange = current.weight - previous.weight;
+    const weeklyChange = weightChange / ((currentWeek - 1) * 7); // Average daily change
+
+    // Update nutritional requirements
     this.adjustNutrition(user, weeklyChange);
-  }
-
-  private static adjustNutrition(user: IUser, weeklyChange: number): void {
-    const current = user.nutritionalRequirements;
     
-    // Calorie adjustments
-    const calorieAdjustment = this.calculateCalorieAdjustment(user, weeklyChange);
-    current.dailyCalories = Math.max(current.dailyCalories + calorieAdjustment, 1200);
-
-    // Macronutrient prioritization
-    switch(user.fitnessGoals.goal) {
-      case 'weight_loss':
-        current.protein = Math.min(current.protein * 1.05, 150);
-        current.carbs = Math.max(current.carbs * 0.95, 100);
-        break;
-      case 'muscle_gain':
-        current.protein = Math.min(current.protein * 1.1, 200);
-        current.fats = Math.min(current.fats * 1.05, 80);
-        break;
-      case 'maintenance':
-        current.protein *= 1.02;
-        current.carbs *= 0.98;
-        break;
-    }
-
-    user.markModified('nutritionalRequirements');
-    user.save();
+    // Update TDEE based on new weight
+    user.nutritionalRequirements.tdee = this.calculateTDEE(
+      user.personalInfo.gender,
+      current.weight,
+      user.personalInfo.height,
+      user.personalInfo.age,
+      user.personalInfo.activityLevel
+    );
+    
+    await user.save();
   }
 
-  private static calculateCalorieAdjustment(user: IUser, weeklyChange: number): number {
-    switch(user.fitnessGoals.goal) {
-      case 'weight_loss':
-        return weeklyChange > -0.5 ? -100 : 0;
-      case 'muscle_gain':
-        return weeklyChange < 0.3 ? 200 : 0;
-      case 'maintenance':
-        return Math.abs(weeklyChange) > 0.2 ? (weeklyChange > 0 ? -50 : 50) : 0;
-      default:
-        return 0;
-    }
+  private static calculateTDEE(
+    gender: string,
+    weight: number,
+    height: number,
+    age: number,
+    activityLevel: string
+  ): number {
+    // Mifflin-St Jeor Equation
+    const bmr = (gender === 'male')
+      ? 10 * weight + 6.25 * height - 5 * age + 5
+      : 10 * weight + 6.25 * height - 5 * age - 161;
+
+    const activityMultipliers: { [key: string]: number } = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+
+    return bmr * activityMultipliers[activityLevel];
+  }
+
+  public static adjustNutrition(user: IUser, weeklyChange: number): void {
+    const { goal } = user.fitnessGoals;
+    const maintenanceCalories = user.nutritionalRequirements.tdee;
+  
+    // Protein base calculation
+    const proteinBase = {
+      weight_loss: 2.2,
+      muscle_gain: 2.5,
+      maintenance: 1.8
+    }[goal] * user.fitnessGoals.targetWeight;
+  
+    // Update all values
+    user.nutritionalRequirements = {
+      ...user.nutritionalRequirements,
+      protein: Math.round(proteinBase),
+      carbs: Math.round(proteinBase * 1.5), // Carb ratio
+      fats: Math.round(proteinBase * 0.4)    // Fat ratio
+    };
+  
+    // Calories based on goal
+    user.nutritionalRequirements.dailyCalories = Math.round(
+      maintenanceCalories + 
+      (goal === 'muscle_gain' ? 500 : goal === 'weight_loss' ? -500 : 0)
+    );
+  }
+
+  public static initializeNutrition(user: IUser): void {
+    // Calculate BMR
+    const bmr = this.calculateTDEE(
+      user.personalInfo.gender,
+      user.fitnessGoals.targetWeight, // Use target weight
+      user.personalInfo.height,
+      user.personalInfo.age,
+      user.personalInfo.activityLevel
+    );
+  
+    // Set initial requirements
+    user.nutritionalRequirements = {
+      bmr: Math.round(bmr),
+      tdee: Math.round(bmr),
+      dailyCalories: Math.round(bmr),
+      protein: 0,
+      carbs: 0,
+      fats: 0
+    };
+  
+    // Calculate macros
+    this.adjustNutrition(user, 0); // Initial adjustment
   }
 }

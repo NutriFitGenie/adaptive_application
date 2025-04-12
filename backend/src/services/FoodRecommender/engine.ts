@@ -1,112 +1,200 @@
-import { IUser } from '../../models/UserModel';
-import { IRecipe } from '../../models/recipe';
-import Recipe from '../../models/recipe';
+import { IUser } from "../../models/UserModel";
+import { IRecipe } from "../../models/recipe";
+import Recipe from "../../models/recipe";
+import User from "../../models/UserModel";
+import { ProgressAnalyzer } from "./progress";
+import WeeklyPlan from "../../models/WeeklyPlan";
+import { ObjectId } from "mongoose";
+import { MemoryManager } from "../../utils/memoryManager";
 
 export class RecommenderEngine {
-
   private user: IUser;
   private allRecipes: IRecipe[];
 
   constructor(user: IUser, recipes: IRecipe[]) {
     this.user = user;
-    this.allRecipes = recipes;
+    this.allRecipes = recipes.filter(
+      (recipe) =>
+        recipe?.nutritionalInfo &&
+        typeof recipe.nutritionalInfo.calories === "number" &&
+        typeof recipe.nutritionalInfo.protein === "number"
+    );
+  }
+  private async processInBatches(recipes: IRecipe[]): Promise<IRecipe[]> {
+    const MIN_SCORE = 20; // Minimum acceptable score
+
+    const scored = recipes
+      .filter((recipe) => recipe?._id && recipe.nutritionalInfo)
+      .map((recipe) => ({
+        ...recipe.toObject(),
+        score:
+          this.calculateMacroScore(recipe) + this.calculateGoalScore(recipe),
+      }))
+      .filter((item) => item.score >= MIN_SCORE);
+
+    return scored.sort((a, b) => b.score - a.score).slice(0, 50);
   }
 
   private filterRecipes(): IRecipe[] {
+    const allergySet = new Set(
+      this.user.preferences.allergies?.map(a => a.toLowerCase()) || []
+    );
+    
+    const dietarySet = new Set(
+      this.user.preferences.dietary?.map(d => d.toLowerCase()) || []
+    );
+  
     return this.allRecipes.filter(recipe => {
-      // Enhanced allergen check with partial matches
-      const hasAllergens = this.user.preferences.allergies.some(allergen =>
-        recipe.ingredients.some((ingredient: string) =>
-          ingredient.toLowerCase().includes(allergen.toLowerCase())
-        )
+      if (!recipe.nutritionalInfo) return false;
+  
+      // CORRECTED: Check recipe's allergens array instead of ingredients
+      const hasAllergens = (recipe.allergens || []).some(allergen => 
+        allergySet.has(allergen.toLowerCase())
       );
-      
-      // Dietary preference matching with fallback
-      const matchesDietary = this.user.preferences.dietary.length > 0 
-        ? this.user.preferences.dietary.every(tag => 
-            recipe.dietaryTags.includes(tag))
-        : true;
-
+  
+      // Match ANY dietary tag if user has preferences
+      const matchesDietary = dietarySet.size === 0 || 
+        (recipe.dietaryTags || []).some(tag =>
+          dietarySet.has(tag.toLowerCase())
+        );
+  
       return !hasAllergens && matchesDietary;
     });
   }
 
-  private calculateRecipeScore(recipe: IRecipe): number {
-    const { fitnessGoals, nutritionalRequirements } = this.user;
-    let score = 0;
-
-    // Base nutritional scoring
-    const proteinDiff = Math.abs(recipe.nutritionalInfo.protein - nutritionalRequirements.protein);
-    const carbDiff = Math.abs(recipe.nutritionalInfo.carbs - nutritionalRequirements.carbs);
+  private calculateMacroScore(recipe: IRecipe): number {
+    if (!recipe?.nutritionalInfo) return 0;
     
-   
-
-    // Goal-based scoring
-    switch(fitnessGoals.goal) {
-      case 'weight_loss':
-        score += (1000 - recipe.nutritionalInfo.calories) / 10;
-        score -= carbDiff * 2;
-        break;
-      case 'muscle_gain':
-        score += recipe.nutritionalInfo.protein * 3;
-        score += (recipe.nutritionalInfo.calories / 15);
-        break;
-      case 'maintenance':
-        score += 120 - Math.abs(recipe.nutritionalInfo.calories - nutritionalRequirements.dailyCalories);
-        break;
+    const { protein = 0, carbs = 0, fats = 0 } = recipe.nutritionalInfo;
+    const userReq = this.user.nutritionalRequirements;
+    const { goal } = this.user.fitnessGoals;
+  
+    // Weight adjustments based on goal
+    let proteinWeight = 0.4;
+    let carbWeight = 0.3;
+    let fatWeight = 0.3;
+  
+    if (goal === 'muscle_gain') {
+      proteinWeight = 0.6;
+      carbWeight = 0.25;
+      fatWeight = 0.15;
+    } else if (goal === 'weight_loss') {
+      proteinWeight = 0.5;
+      carbWeight = 0.2;
+      fatWeight = 0.3;
+    } else if (goal === 'maintenance') {
+      proteinWeight = 0.4;
+      carbWeight = 0.3;
+      fatWeight = 0.3;
     }
-
-    return score ;
+  
+    return (
+      (protein / (userReq.protein || 1)) * proteinWeight +
+      (carbs / (userReq.carbs || 1)) * carbWeight +
+      (fats / (userReq.fats || 1)) * fatWeight
+    ) * 100;
   }
 
-  public getEnhancedRecommendations(mealType?: string): IRecipe[] {
+  private calculateGoalScore(recipe: IRecipe): number {
+    if (!recipe?.nutritionalInfo) return 0;
+
+    const { goal } = this.user.fitnessGoals;
+    const { dailyCalories } = this.user.nutritionalRequirements;
+    const { calories = 0, protein = 0 } = recipe.nutritionalInfo;
+
+    switch (goal) {
+      case "weight_loss":
+        return 100 - Math.abs(calories - dailyCalories * 0.8);
+      case "muscle_gain":
+        return ((protein || 0) / (dailyCalories || 1)) * 200;
+      case "maintenance":
+        return 100 - Math.abs(calories - dailyCalories);
+      default:
+        return 0;
+    }
+  }
+
+  public async getRecommendations(mealType?: string): Promise<IRecipe[]> {
     try {
-      return this.filterRecipes()
-        .filter(recipe => !mealType || recipe.mealType === mealType)
-        .sort((a, b) => this.calculateTotalScore(b) - this.calculateTotalScore(a))
-        .slice(0, 10);
-    } catch (error) {
-      console.error('Recommendation error:', error);
-      return [];
+      const filtered = this.filterRecipes();
+      MemoryManager.getInstance().trackAllocation("filtered_recipes", filtered);
+
+      const processed = await this.processInBatches(
+        filtered.filter((recipe) => !mealType || recipe.mealType === mealType)
+      );
+
+      return processed;
+    } finally {
+      MemoryManager.getInstance().releaseMemory("filtered_recipes");
     }
   }
-
-  private calculateTotalScore(recipe: IRecipe): number {
-    return this.calculateRecipeScore(recipe) + 
-           this.behavioralBoost(recipe) + 
-           this.seasonalAdjustment(recipe);
-  }
-
-  private behavioralBoost(recipe: IRecipe): number {
-    const isPreferred = this.user.preferredRecipes.some(id => 
-      id.toString() === (recipe._id ).toString()
-    );
-    return isPreferred ? 75 : 0;
-  }
-
-  private seasonalAdjustment(recipe: IRecipe): number {
-    const currentMonth = new Date().getMonth();
-    const season = [
-      'winter', 'winter', 'spring', 'spring', 'spring', 'summer',
-      'summer', 'summer', 'fall', 'fall', 'fall', 'winter'
-    ][currentMonth];
+  public static async generateWeeklyPlan(userId: string): Promise<void> {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
+  
+    // Get ALL valid recipes first
+    const allRecipes = await Recipe.find({
+      'nutritionalInfo.calories': { $exists: true },
+      'nutritionalInfo.protein': { $exists: true }
+    });
+  
+    const engine = new RecommenderEngine(user, allRecipes);
     
-    const seasonalTagMap: Record<string, string[]> = {
-      winter: ['comfort-food', 'soup', 'stew'],
-      spring: ['light', 'fresh', 'salad'],
-      summer: ['grilled', 'bbq', 'cold'],
-      fall: ['harvest', 'baked', 'roasted']
+    // Emergency fallback filter
+    const getFallbackRecipes = async (mealType: string) => {
+      // Emergency fallback: 7 generic recipes
+      return Recipe.aggregate([
+        { $match: { 
+          'nutritionalInfo.calories': { $exists: true },
+          'nutritionalInfo.protein': { $exists: true }
+        }},
+        { $sample: { size: 7 } }
+      ]);
     };
-
-    return recipe.dietaryTags.some(tag => seasonalTagMap[season].includes(tag)) ? 40 : 0;
-  }
-
-  private async getSimilarUserPreferences(): Promise<IRecipe[]> {
-    // Placeholder for collaborative filtering implementation
-    // Use PP_users.csv data for user similarity analysis
-    return Recipe.find()
-      .sort({ averageRating: -1 })
-      .limit(5)
-      .exec();
+  
+    const [breakfastRecipes, lunchRecipes, dinnerRecipes] = await Promise.all(
+      ['breakfast', 'lunch', 'dinner'].map(async (mealType) => {
+        try {
+          let recipes = await engine.getRecommendations(mealType);
+          if (recipes.length < 7) recipes = await engine.getRecommendations();
+          if (recipes.length < 7) recipes = await getFallbackRecipes(mealType);
+          return recipes.slice(0, 7);
+        } catch (error) {
+          return await getFallbackRecipes(mealType);
+        }
+      })
+    );
+    // Generate daily plans
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 
+                 'friday', 'saturday', 'sunday'];
+    
+                 // engine.ts
+                 const dailyPlans = days.map((day, idx) => {
+                  // Ensure meal IDs are valid ObjectIds
+                  const mealIds = [
+                    breakfastRecipes[idx]._id, 
+                    lunchRecipes[idx]._id, 
+                    dinnerRecipes[idx]._id
+                  ].filter(Boolean); // Remove invalid IDs
+                
+                  return {
+                    day,
+                    mealIds, // Use the flat array
+                    totalCalories: breakfastRecipes[idx].nutritionalInfo.calories +
+                                   lunchRecipes[idx].nutritionalInfo.calories +
+                                   dinnerRecipes[idx].nutritionalInfo.calories
+                  };
+                });
+  
+    // Create and save plan
+    const plan = await WeeklyPlan.create({
+      user: userId,
+      weekNumber: Math.ceil((Date.now() - user.createdAt.getTime()) / (7 * 86400000)),
+      dailyPlans,
+      totalCalories: dailyPlans.reduce((sum, day) => sum + day.totalCalories, 0)
+    });
+  
+    user.weeklyPlans.push(plan._id as ObjectId);
+    await user.save(); // Ensure user document is updated
   }
 }

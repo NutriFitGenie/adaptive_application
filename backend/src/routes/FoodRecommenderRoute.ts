@@ -3,7 +3,7 @@ import {getRecommendations, trackProgress, trackRecipeChoice} from '../controlle
 
 const router = express.Router();
 
-router.get('/:userId', getRecommendations);
+router.get('/:userId', getRecommendations,);
 router.post('/progress', trackProgress);
 router.post('/track-choice', trackRecipeChoice);
 

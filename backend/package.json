@@ -6,7 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
-    "start": "ts-node server.ts"
+     "start": "NODE_OPTIONS='--max-old-space-size=4096' ts-node server.ts"
   },
   "keywords": [],
   "author": "",

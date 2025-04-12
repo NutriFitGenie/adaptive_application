@@ -11,71 +11,90 @@ import User from './../models/UserModel'; // Import the User model
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config/env.config';
+import {RecommenderEngine } from '../services/FoodRecommender/engine';
+import { ProgressAnalyzer } from '../services/FoodRecommender/progress';
+
 
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Extract additional fields from the request body
     const {
       username,
       email,
       password,
-      height,             // in centimeters
-      weight,             // in kilograms (will be used as targetWeight)
-      dietaryPreferences, // e.g., comma-separated string e.g., "vegan, paleo" or an array
-      allergies,          // e.g., comma-separated string e.g., "peanuts, milk" or an array
-      fitnessGoal         // should be one of 'weight_loss', 'muscle_gain', 'maintenance'
+      age,
+      gender,
+      height,
+      weight,
+      activityLevel,
+      dietaryPreferences,
+      allergies,
+      fitnessGoal
     } = req.body;
-    
-    // Hash the password
-    const hashedPassword: string = await bcrypt.hash(password, 10);
-    console.log(req.body, "req.body");
 
-    // Map the flat incoming data into the nested structure your model expects.
-    // Check if dietaryPreferences and allergies are arrays already.
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const userData = {
-      name: username, // mapping 'username' to 'name'
+      name: username,
       email,
       password: hashedPassword,
+      personalInfo: {
+        age: Number(age),
+        gender,
+        height: Number(height),
+        activityLevel
+      },
       preferences: {
-        dietary: Array.isArray(dietaryPreferences)
-          ? dietaryPreferences
-          : dietaryPreferences
-            ? dietaryPreferences.split(",").map((s: string) => s.trim())
-            : [],
-        allergies: Array.isArray(allergies)
-          ? allergies
-          : allergies
-            ? allergies.split(",").map((s: string) => s.trim())
-            : [],
-        excludedIngredients: [] // default empty array
+        dietary: dietaryPreferences.split(',').map((s: string) => s.trim()),
+        allergies: allergies.split(',').map((s: String) => s.trim()),
+        excludedIngredients: []
       },
       fitnessGoals: {
-        goal: (fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance") || "weight_loss",
-        targetWeight: weight ? Number(weight) : 0,
-        weeklyCommitment: 3 // default weekly commitment; update as needed
+        goal: fitnessGoal,
+        targetWeight: Number(weight),
+        weeklyCommitment: 3
       },
-      progress: [],
       nutritionalRequirements: {
+        bmr: 0,
+        tdee: 0,
         dailyCalories: 0,
         protein: 0,
         carbs: 0,
         fats: 0
       },
-      preferredRecipes: [] as any,
-      // Optionally, store height if your model supports it.
-      height: height ? Number(height) : undefined
+      progress: [],
+      preferredRecipes: []
     };
 
-    // Create a new User instance and save it directly to the database
     const newUser = await new User(userData).save();
-    console.log(newUser, "newUser");
+    ProgressAnalyzer.initializeNutrition(newUser);
+    await newUser.save();
+    console.log('User created:', newUser);
 
-    res.status(201).json(newUser);
+
+    
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: newUser._id },
+      config.JWT_SECRET as string,
+      { expiresIn: '7d' }
+    );
+    setImmediate(async () => {
+      try {
+         await RecommenderEngine.generateWeeklyPlan((newUser._id as String).toString());
+
+      } catch (err) {
+        console.error('Background plan generation failed:', err);
+      }
+    });
+    
+    res.status(201).json({ token, user: newUser });
+
   } catch (error) {
     console.error("Error storing user:", error);
     res.status(500).json({ error: 'Error creating user' });
   }
 };
+
 
 export const loginUserController = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -175,3 +194,4 @@ export const deleteUserController = async (req: Request, res: Response): Promise
     res.status(500).json({ error: 'Error deleting user' });
   }
 };
+

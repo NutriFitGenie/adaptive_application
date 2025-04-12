@@ -2,31 +2,51 @@ import { Request, Response } from 'express';
 import { IUser } from '../models/UserModel';
 import User from '../models/UserModel';
 import Recipe from '../models/recipe';
-import { RecommenderEngine } from '../services/FoodRecommender/engine';
+import {RecommenderEngine } from '../services/FoodRecommender/engine';
 import {ProgressAnalyzer} from '../services/FoodRecommender/progress';
+import WeeklyPlan from '../models/WeeklyPlan';
 
 
-    export const getRecommendations= async (req: Request, res: Response):Promise<any> => {
-    try {
-      const user = await User.findById(req.params.userId)
-        .populate('progress')
-        .exec() as IUser;
-      
-      if (!user) return res.status(404).json({ error: 'User not found' });
-
-      const recipes = await Recipe.find();
-      const engine = new RecommenderEngine(user, recipes);
-      
-      res.json({
-        recommendations: engine.getEnhancedRecommendations(),
-        nutritionalGoals: user.nutritionalRequirements
+export const getRecommendations = async (req: Request, res: Response):Promise<any> => {
+  try {
+    const user = await User.findById(req.params.userId)
+      .populate({
+        path: 'weeklyPlans',
+        populate: {
+          path: 'dailyPlans.mealIds',
+          model: 'Recipe'
+        }
       });
-    } catch (error) {
-      console.error('Recommendation error:', error);
-      res.status(500).json({ error: 'Recommendation failed' });
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Force new plan generation if none exists
+    if (user.weeklyPlans.length === 0) {
+      await RecommenderEngine.generateWeeklyPlan((user._id as string).toString());
+      await user.save();
     }
+
+    // Fetch updated user with populated plan
+    const updatedUser = await User.findById(user._id)
+      .populate({
+        path: 'weeklyPlans',
+        populate: {
+          path: 'dailyPlans.mealIds',
+          model: 'Recipe'
+        }
+      });
+
+    res.json({
+      weeklyPlan: updatedUser?.weeklyPlans[0],
+      nutritionalRequirements: updatedUser?.nutritionalRequirements
+    });
+  } catch (error) {
+    console.error('Recommendation error:', error);
+    res.status(500).json({ error: 'Failed to get recommendations' });
   }
-    export const trackProgress= async (req: Request, res: Response):Promise<any> => {
+};
+
+export const trackProgress= async (req: Request, res: Response):Promise<any> => {
     try {
       const user = await User.findById(req.body.userId);
       if (!user) return res.status(404).json({ error: 'User not found' });
@@ -40,9 +60,9 @@ import {ProgressAnalyzer} from '../services/FoodRecommender/progress';
       console.error('Progress tracking error:', error);
       res.status(500).json({ error: 'Progress update failed' });
     }
-  }
+}
 
-  export const trackRecipeChoice= async (req: Request, res: Response):Promise<any> => {
+export const trackRecipeChoice= async (req: Request, res: Response):Promise<any> => {
     try {
       const { userId, recipeId } = req.body;
       const user = await User.findById(userId);
@@ -58,4 +78,4 @@ import {ProgressAnalyzer} from '../services/FoodRecommender/progress';
       console.error('Recipe tracking error:', error);
       res.status(500).json({ error: 'Tracking failed' });
     }
-  }
+}

@@ -1,8 +1,7 @@
-
+// models/recipe.ts
 import { Schema, model, Document } from 'mongoose';
 
 export interface IRecipe extends Document {
-  _id: number;
   name: string;
   cookingTime: number;
   ingredients: string[];
@@ -15,26 +14,40 @@ export interface IRecipe extends Document {
   };
   dietaryTags: string[];
   allergens: string[];
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-
+  mealType: string;  // optional field (e.g., breakfast, lunch, dinner)
 }
 
 const RecipeSchema = new Schema<IRecipe>({
-  _id: { type: Number, required: true },
   name: { type: String, required: true },
-  cookingTime: Number,
-  ingredients: [String],
-  preparationSteps: [String],
+  cookingTime: { type: Number, required: true },
+  ingredients: { type: [String], default: [] },
+  preparationSteps: { type: [String], default: [] },
   nutritionalInfo: {
-    calories: Number,
-    protein: Number,
-    carbs: Number,
-    fats: Number
+    calories: { type: Number, required: true },
+    protein: { type: Number, required: true },
+    carbs: { type: Number, required: true },
+    fats: { type: Number, required: true }
   },
-  dietaryTags: [String],
-  allergens: [String],
-  mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack'] },
-
+  dietaryTags: { type: [String], default: [] },
+  allergens: { type: [String], default: [] },
+  mealType: { type: String }
 });
+RecipeSchema.virtual('mealDetails').get(function() {
+  return {
+    name: this.name,
+    calories: this.nutritionalInfo.calories,
+    mealType: this.mealType
+  };
+});
+export interface IRecipePopulated extends IRecipe {
+  mealDetails: {
+    name: string;
+    calories: number;
+    mealType?: string;
+  };
+}
+RecipeSchema.index({ mealType: 1 });
+RecipeSchema.index({ dietaryTags: 1 });
+RecipeSchema.index({ ingredients: 'text' }, { weights: { ingredients: 1 } });
 
 export default model<IRecipe>('Recipe', RecipeSchema);

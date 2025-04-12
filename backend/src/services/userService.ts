@@ -10,50 +10,49 @@ export const createUser = async (data: {
   username: string;
   email: string;
   password: string;
-  height?: number;
-  weight?: number;
-  dietaryPreferences?: string;
-  allergies?: string;
-  fitnessGoal?: string;
+  age: number;
+  gender: string;
+  height: number;
+  weight: number;
+  activityLevel: string;
+  dietaryPreferences: string;
+  allergies: string;
+  fitnessGoal: string;
 }): Promise<IUser> => {
   const mappedData = {
-    name: data.username, // Model expects "name"
+    name: data.username,
     email: data.email,
     password: data.password,
-    // For preferences, convert comma-separated strings into arrays
+    personalInfo: {
+      age: data.age,
+      gender: data.gender,
+      height: data.height,
+      activityLevel: data.activityLevel
+    },
     preferences: {
-      dietary: data.dietaryPreferences
-        ? data.dietaryPreferences.split(",").map((s) => s.trim())
-        : [],
-      allergies: data.allergies
-        ? data.allergies.split(",").map((s) => s.trim())
-        : [],
-      excludedIngredients: [] // default empty array; adjust as needed
+      dietary: data.dietaryPreferences.split(',').map(s => s.trim()),
+      allergies: data.allergies.split(',').map(s => s.trim()),
+      excludedIngredients: []
     },
-    // For fitnessGoals, use the provided fitnessGoal and weight as target weight
     fitnessGoals: {
-      goal: (data.fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance") || "weight_loss",
-      targetWeight: data.weight || 0,
-      weeklyCommitment: 3 // default weekly commitment; adjust if needed
+      goal: data.fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance",
+      targetWeight: data.weight,
+      weeklyCommitment: 3
     },
-    // Default for progress is an empty array
-    progress: [],
-    // Default nutritionalRequirements; update later based on actual recommendations
     nutritionalRequirements: {
+      bmr: 0,
+      tdee: 0,
       dailyCalories: 0,
       protein: 0,
       carbs: 0,
       fats: 0
     },
-    // Initialize preferredRecipes as an empty array
-    preferredRecipes: [] as any
+    progress: [],
+    preferredRecipes: []
   };
 
-  console.log(mappedData, "mapped data");
-  const user = new User(mappedData);
-  console.log(user, "user instance");
-  return await user.save();
-  };
+  return await new User(mappedData).save();
+};
 
 /**
  * Retrieve a single user by their ID.
