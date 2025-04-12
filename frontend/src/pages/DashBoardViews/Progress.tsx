@@ -15,11 +15,13 @@ interface Exercise {
   day: number;
 }
 
-interface WorkoutProps {
+interface CombinedProgressProps {
+  apiBase: string;
   onViewChange: (view: "login" | "register" | "dashboard") => void;
 }
 
-const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
+const ProgressAndNutrition: React.FC<CombinedProgressProps> = ({onViewChange }) => {
+  // ====== Workout Progress Tracker State & Functions ======
   const [week, setWeek] = useState<number>(0);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [inputs, setInputs] = useState<{ [key: string]: string[] }>({});
@@ -29,9 +31,8 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
     try {
       const response = await fetch(`http://localhost:3000/api/workout/getCurrentWorkout?userId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch current week plan");
-      const currentPlan = await response.json();
+      const currentPlan: Exercise[] = await response.json();
       setExercises(currentPlan);
-
       if (currentPlan.length > 0 && currentPlan[0].week !== undefined) {
         setWeek(currentPlan[0].week);
       }
@@ -92,7 +93,6 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
         week: ex.week,
       };
     });
-
     const payload = {
       userId,
       updatedPlan: [
@@ -113,6 +113,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
       const result = await response.json();
       console.log("Submit day's workout result:", result);
       alert(`Workout for Day ${dayKey} saved successfully!`);
+
       fetchCurrentWeekPlan();
     } catch (error) {
       console.error("Error submitting day's workout:", error);
@@ -120,6 +121,36 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
     }
   };
 
+  // ====== Nutrition / Weekly Progress Form State & Functions ======
+  const [formData, setFormData] = useState({
+    userId: userId,
+    weight: '',
+    waist: '',
+    otherMeasurements: '',
+  });
+  const [responseMsg, setResponseMsg] = useState('');
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://localhost:3000/weeklyprogress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      setResponseMsg(`Weekly progress saved: ${JSON.stringify(data, null, 2)}`);
+    } catch (error: any) {
+      setResponseMsg(`Error: ${error.message}`);
+    }
+  };
+
+  // ====== Combined Render ======
   return (
     <div className="App flex justify-center">
       <div className="w-full max-w-4xl mt-8">
@@ -190,4 +221,6 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   );
 };
 
-export default Progress;
+// Provide a named export "Progress" so that the module provides this export.
+export const Progress  = ProgressAndNutrition; // This line aliases our component as "Progress"
+export default ProgressAndNutrition;

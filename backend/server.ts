@@ -4,10 +4,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
 import userRoutes from './src/routes/userRoutes';
-import workoutRoutes from './src/routes/workoutRoutes';
 import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
-import {seedWorkouts} from './src/services/workoutInitalizer'
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -25,11 +23,6 @@ app.get("/", (req, res) => {
 
 // user routes
 app.use('/api/users', userRoutes);
-
-// user routes
-app.use('/api/workout', workoutRoutes);
-app.use('/api/workoutInit', seedWorkouts);
-
 
 // Mount Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

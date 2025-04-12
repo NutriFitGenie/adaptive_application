@@ -5,7 +5,9 @@ const userId = "67e1627cebe27e5f8285ec21";
 interface HomeProps {
   planData: any;
   currentDay: string;
-  onViewChange: (view: "login" | "register" | "dashboard" | "workouts" | "nutrition" | "progress" | "history" | "setting") => void;
+  onViewChange: (view: 
+    "login" | "register" | "dashboard" | "workouts" | "nutrition" | "progress" | "history" | "setting"
+  ) => void;
 }
 
 interface HistoryEntry {
@@ -44,11 +46,9 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
   const [currentWorkout, setCurrentWorkout] = useState<PlannedExercise[]>([]);
   const [loadingWorkout, setLoadingWorkout] = useState<boolean>(false);
   const [workoutError, setWorkoutError] = useState<string>("");
-
-  // State for fetched workout history (from API)
+  // State for fetched workout history
   const [fetchedHistory, setFetchedHistory] = useState<ExerciseWithHistory[]>([]);
 
-  // Fetch current workout plan from /getCurrentWorkout endpoint.
   const fetchCurrentWorkout = async () => {
     setLoadingWorkout(true);
     setWorkoutError("");
@@ -65,18 +65,14 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
     }
   };
 
-  // Fetch current workout plan on mount.
   useEffect(() => {
     fetchCurrentWorkout();
   }, []);
 
-  // Fetch workout history using the same logic as before.
   const fetchWorkoutHistory = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/workout/getWorkout?userId=${userId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch workout history");
-      }
+      if (!response.ok) throw new Error("Failed to fetch workout history");
       const historyData = await response.json();
       setFetchedHistory(historyData);
     } catch (error) {
@@ -88,6 +84,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
     fetchWorkoutHistory();
   }, []);
 
+  // Render UI
   return (
     <>
       <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,11 +114,15 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
               className="view-complete-workout px-4 py-2 bg-primaryColor1 text-white rounded-md"
               onClick={() => {
                 console.log("click");
-                onViewChange("workouts")}}
+                onViewChange("workouts");
+              }}
             >
               View Complete Workout
             </button>
-            <button className="start-workout px-4 py-2 bg-primaryColor2 text-white rounded-md">
+            <button 
+              className="start-workout px-4 py-2 bg-primaryColor2 text-white rounded-md"
+              onClick={() => onViewChange("progress")}
+            >
               Start Workout
             </button>
           </div>
@@ -142,17 +143,23 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
             <p>No meal plan available for {currentDay}.</p>
           )}
           <div className="workout-actions mt-4 flex gap-2">
-            <button className="view-complete-meal px-4 py-2 bg-primaryColor1 text-white rounded-md">
+            <button 
+              className="view-complete-meal px-4 py-2 bg-primaryColor1 text-white rounded-md"
+              onClick={() => onViewChange("nutrition")}
+            >
               View Complete Meal
             </button>
-            <button className="start-meal px-4 py-2 bg-primaryColor2 text-white rounded-md">
+            <button 
+              className="start-meal px-4 py-2 bg-primaryColor2 text-white rounded-md"
+              onClick={() => onViewChange("progress")}
+            >
               Start Meal
             </button>
           </div>
         </div>
       </div>
 
-      {/* Previous History Section using fetched history data */}
+      {/* Previous History Section */}
       <div className="plan-card history-card bg-white border border-gray-200 rounded-md shadow-sm p-4 mt-8">
         <h3 className="text-2xl font-bold mb-4">Previous History</h3>
         {fetchedHistory.length > 0 ? (
