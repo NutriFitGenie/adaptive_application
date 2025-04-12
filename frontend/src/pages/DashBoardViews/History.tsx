@@ -1,6 +1,4 @@
-// History.tsx
 import React, { useState, useEffect } from 'react';
-
 
 const userId = "67e1627cebe27e5f8285ec21";
 
@@ -43,63 +41,59 @@ const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h2>Workout History</h2>
-      </header>
-      <section className="history px-4 md:px-8 lg:px-16 w-full mx-auto mt-8">
-        {exercises.map((ex) => (
-          <div key={ex._id} className="exercise-history bg-white border border-gray-200 rounded-md shadow-sm p-4 mb-8">
-            <h4 className="text-xl font-semibold text-gray-700 mb-3">{ex.name}</h4>
-            {ex.history && ex.history.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 table-auto">
-                <thead className="primaryColor1BG">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Week
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Planned Weight (kg)
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Actual Weight (kg)
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Planned Sets
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Actual Sets
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Performance Ratio
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                      Performance
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {ex.history.map((entry, idx) => (
-                    <tr key={idx} className="hover:bg-gray-100">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.week}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.plannedWeight}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actualWeight}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.planned.join(', ')}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actual.join(', ')}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceRatio}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceClass}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-600">No history yet.</p>
-            )}
-          </div>
-        ))}
-      </section>
+    <div className="App flex justify-center">
+      <div className="w-full max-w-4xl mt-8">
+        {/* Responsive and aligned header */}
+        <div className="bg-gray-800 text-white text-center py-6 rounded-t-lg shadow-md">
+          <h2 className="text-2xl md:text-3xl font-bold">Workout Progress Tracker</h2>
+          <p className="text-sm md:text-base mt-1">Your Weekly Performance History</p>
+        </div>
+
+        {/* Workout history section */}
+        <div className="bg-white border border-gray-200 rounded-b-lg shadow-sm p-4">
+          {exercises.length === 0 && (
+            <p className="text-gray-600">No history yet.</p>
+          )}
+
+          {exercises.map((ex) => (
+            <div key={ex._id} className="mb-8">
+              <h4 className="text-xl font-semibold text-gray-700 mb-3">{ex.name}</h4>
+              {ex.history && ex.history.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 table-auto">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Week</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Weight (kg)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Weight (kg)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Sets</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Sets</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance Ratio</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {ex.history.map((entry, idx) => (
+                        <tr key={idx} className="hover:bg-gray-100">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.week}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.plannedWeight}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actualWeight}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.planned.join(', ')}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actual.join(', ')}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceRatio}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceClass}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-gray-600">No data available for this exercise.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

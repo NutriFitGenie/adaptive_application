@@ -105,12 +105,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
                 {exercise.description && <p>{exercise.description}</p>}
                 <ul className="list-disc ml-5">
                   <li>Category: {exercise.category}</li>
-                  <li>Difficulty: {exercise.difficulty}</li>
                   <li>Weight: {exercise.weight} KG</li>
-                  <li>
-                    Reps: {exercise.set1Reps} / {exercise.set2Reps} / {exercise.set3Reps}
-                  </li>
-                  {exercise.oneRepMax !== undefined && <li>1RM: {exercise.oneRepMax}</li>}
                 </ul>
               </div>
             ))

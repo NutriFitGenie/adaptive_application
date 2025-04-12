@@ -25,31 +25,26 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   const [inputs, setInputs] = useState<{ [key: string]: string[] }>({});
   const [actualWeights, setActualWeights] = useState<{ [key: string]: string }>({});
 
-  // Fetch current week plan and prefill inputs and actualWeights.
   const fetchCurrentWeekPlan = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/workout/getCurrentWorkout?userId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch current week plan");
       const currentPlan = await response.json();
       setExercises(currentPlan);
-      
-      // If API returns at least one exercise, use its week value.
+
       if (currentPlan.length > 0 && currentPlan[0].week !== undefined) {
         setWeek(currentPlan[0].week);
       }
 
-      // Prefill actualWeights with planned weight.
       const weights: { [key: string]: string } = {};
+      const repInputs: { [key: string]: string[] } = {};
+
       currentPlan.forEach((ex: Exercise) => {
         weights[ex.name] = String(ex.weight);
-      });
-      setActualWeights(weights);
-      
-      // Prefill rep inputs.
-      const repInputs: { [key: string]: string[] } = {};
-      currentPlan.forEach((ex: Exercise) => {
         repInputs[ex.name] = [String(ex.set1Reps), String(ex.set2Reps), String(ex.set3Reps)];
       });
+
+      setActualWeights(weights);
       setInputs(repInputs);
     } catch (error) {
       console.error("Error fetching current week plan:", error);
@@ -73,7 +68,6 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
     setActualWeights((prev) => ({ ...prev, [exerciseName]: value }));
   };
 
-  // Group exercises by day.
   const exercisesByDay = exercises.reduce((acc: { [day: string]: Exercise[] }, ex) => {
     const dayKey = ex.day ? String(ex.day) : "Unknown";
     if (!acc[dayKey]) acc[dayKey] = [];
@@ -81,10 +75,8 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
     return acc;
   }, {});
 
-  // Function to submit the workout for a specific day.
   const handleSubmitDay = async (dayKey: string) => {
     const dayExercises = exercisesByDay[dayKey];
-    // Build the Exercises array with expected keys:
     const exercisesPayload = dayExercises.map((ex: Exercise) => {
       const repsArray = (inputs[ex.name] || []).map((val) => parseInt(val, 10) || 0);
       const weightValue = parseFloat(actualWeights[ex.name]) || ex.weight;
@@ -92,7 +84,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
         Exercise_id: ex._id,
         Exercise: ex.name,
         description: ex.description,
-        body_part: ex.day ? ex.day.toString() : "Unknown", // update if you have a dedicated category field
+        body_part: ex.day ? ex.day.toString() : "Unknown",
         weight: weightValue,
         set1Reps: repsArray[0],
         set2Reps: repsArray[1],
@@ -100,8 +92,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
         week: ex.week,
       };
     });
-    
-    // Build the complete payload to match your sample.
+
     const payload = {
       userId,
       updatedPlan: [
@@ -111,7 +102,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
         },
       ],
     };
-    
+
     try {
       const response = await fetch("http://localhost:3000/api/workout/updateWorkout", {
         method: 'POST',
@@ -122,7 +113,6 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
       const result = await response.json();
       console.log("Submit day's workout result:", result);
       alert(`Workout for Day ${dayKey} saved successfully!`);
-      // After submission, fetch the updated current week plan to get the next workout.
       fetchCurrentWeekPlan();
     } catch (error) {
       console.error("Error submitting day's workout:", error);
@@ -131,65 +121,70 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h2>Workout Progress Tracker</h2>
-        <p>Current Week: {week}</p>
-      </header>
-      <div className="actual-workout-section">
-        <h2>Enter Your Actual Workout Data</h2>
-        {Object.keys(exercisesByDay)
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .map((day, idx) => (
-            <div key={day} className="actual-workout-day">
-              <h3>{`Workout (Day ${day})`}</h3>
-              {exercisesByDay[day].map((ex) => (
-                <div key={ex._id} className="exercise-input">
-                  <p>
-                    <strong>{ex.name}</strong> (Recommended: {ex.set1Reps}, {ex.set2Reps}, {ex.set3Reps})
-                  </p>
-                  <label>
-                    Weight (KG):{" "}
-                    <input
-                      type="number"
-                      min={0}
-                      value={actualWeights[ex.name] || String(ex.weight)}
-                      onChange={(e) => handleActualWeightChange(ex.name, e.target.value)}
-                    />
-                  </label>
-                  <br />
-                  <label>
-                    Set 1:{" "}
-                    <input
-                      type="number"
-                      min={0}
-                      value={(inputs[ex.name] && inputs[ex.name][0]) || ""}
-                      onChange={(e) => handleAdaptiveInputChange(ex.name, 0, e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Set 2:{" "}
-                    <input
-                      type="number"
-                      min={0}
-                      value={(inputs[ex.name] && inputs[ex.name][1]) || ""}
-                      onChange={(e) => handleAdaptiveInputChange(ex.name, 1, e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Set 3:{" "}
-                    <input
-                      type="number"
-                      min={0}
-                      value={(inputs[ex.name] && inputs[ex.name][2]) || ""}
-                      onChange={(e) => handleAdaptiveInputChange(ex.name, 2, e.target.value)}
-                    />
-                  </label>
+    <div className="App flex justify-center">
+      <div className="w-full max-w-4xl mt-8">
+        <header className="bg-gray-800 text-white text-center py-6 rounded-t-lg shadow-md">
+          <h2 className="text-2xl md:text-3xl font-bold">Workout Progress Tracker</h2>
+          <p className="text-sm md:text-base mt-1">Current Week: {week}</p>
+        </header>
+
+        {/* ❗ Conditional logic if exercises list is empty */}
+        {exercises.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-b-lg shadow-sm p-6 text-center text-gray-700 text-lg">
+            <p>You have not completed the testing week yet.</p>
+            <p>Please proceed to finish it in the <strong>Workouts</strong> section!</p>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-b-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Enter Your Actual Workout Data</h2>
+            {Object.keys(exercisesByDay)
+              .sort((a, b) => parseInt(a) - parseInt(b))
+              .map((day) => (
+                <div key={day} className="mb-8">
+                  <h3 className="text-lg font-medium text-gray-700 mb-3">{`Workout (Day ${day})`}</h3>
+                  {exercisesByDay[day].map((ex) => (
+                    <div key={ex._id} className="bg-gray-50 p-4 mb-4 rounded border border-gray-200">
+                      <p className="font-semibold text-gray-800">
+                        {ex.name} <span className="text-sm text-gray-500">(Recommended: {ex.set1Reps}, {ex.set2Reps}, {ex.set3Reps})</span>
+                      </p>
+                      <div className="mt-2 space-y-2">
+                        <label className="block">
+                          Weight (KG):{" "}
+                          <input
+                            type="number"
+                            min={0}
+                            className="border px-2 py-1 rounded ml-2"
+                            value={actualWeights[ex.name] || String(ex.weight)}
+                            onChange={(e) => handleActualWeightChange(ex.name, e.target.value)}
+                          />
+                        </label>
+                        <div className="mt-2 space-y-2">
+                          {[0, 1, 2].map((i) => (
+                          <label key={i} className="block">
+                            Set {i + 1} Reps:{" "}
+                            <input
+                              type="number"
+                              min={0}
+                              className="border px-2 py-1 rounded ml-2"
+                              value={(inputs[ex.name] && inputs[ex.name][i]) || ""}
+                              onChange={(e) => handleAdaptiveInputChange(ex.name, i, e.target.value)}
+                            />
+                          </label>
+                        ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => handleSubmitDay(day)}
+                    className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700"
+                  >
+                    Submit Day's Workout
+                  </button>
                 </div>
               ))}
-              <button onClick={() => handleSubmitDay(day)}>Submit Day's Workout</button>
-            </div>
-          ))}
+          </div>
+        )}
       </div>
     </div>
   );

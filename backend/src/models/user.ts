@@ -4,6 +4,7 @@ export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  age: number; 
   fitnessGoal:String;
   workoutDays:number;
   experienceLevel:String;
@@ -16,6 +17,7 @@ const UserSchema: Schema = new Schema(
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    age: { type: Number, required: true },
     fitnessGoal: { type: String, required: false },
     workoutDays: { type: Number, required: false },
     experienceLevel: { type: String, required: false },

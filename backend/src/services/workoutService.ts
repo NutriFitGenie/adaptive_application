@@ -227,6 +227,8 @@ export const updateWorkout = async ({
     const user = await User.findById(userId);
     if (user != null && currentDay >= user.workoutDays) {
       const bandit = new Bandit(0.2, 5);
+      await bandit.load(userId); // Load previous model
+
       const plannedDocuments: Partial<IPlannedExercise>[] = [];
 
       const plannedWorkouts = await plannedExercise.find({ userId, week: currentWeek });
@@ -250,15 +252,18 @@ export const updateWorkout = async ({
         };
 
         const userContext = {
-          age: 25,
-          goal:"fat_loss"
+          age: user.age,
+          goal: user.fitnessGoal as string
         };
+        console.log("User Context:", userContext);
+        console.log("Performance Metrics:", performance);
+        console.log("reps :", Math.round(((plannedExercise.set1Reps ?? 0) + (plannedExercise.set2Reps ?? 0) + (plannedExercise.set3Reps ?? 0)) / 3));
 
         const { plan: newPlan, action } = generateWeek2Plan({
           weight: plannedExercise.weight ?? 0,
-          reps: plannedExercise.set1Reps ?? 6, // assume rep = set1Reps
+          reps: Math.round(((plannedExercise.set1Reps ?? 0) + (plannedExercise.set2Reps ?? 0) + (plannedExercise.set3Reps ?? 0)) / 3),
         }, userContext, performance, bandit);
-
+        
         const reward = calculateReward(
           { totalVolume: actualTotalVolume },
           { totalVolume: plannedTotalVolume }
@@ -271,7 +276,7 @@ export const updateWorkout = async ({
           performance.setRatio
         ];
         bandit.updateModel(action, context, reward);
-
+        
         plannedDocuments.push({
           day: plannedExercise.day,
           userId,
@@ -288,6 +293,7 @@ export const updateWorkout = async ({
       }
 
       await plannedExercise.insertMany(plannedDocuments);
+      await bandit.save(userId); // Persist updated model
     }
 
     return actualResults ? true : false;
