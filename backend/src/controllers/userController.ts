@@ -95,6 +95,13 @@ export const loginUserController = async (req: Request, res: Response) => {
   try {
     const {email, password} = req.body;
     const getUser = await getUserByEmail(email);
+    console.log(getUser);
+    // All data if you want send during logging to store in local storage add here 
+    const userData = {
+      id : getUser?.id,
+      username : getUser?.username,
+      email : getUser?.email,
+    }
     if (!getUser) {
       return res.status(400).json({ message: 'User not found.' });
     }
@@ -115,7 +122,7 @@ const token = jwt.sign(
   { expiresIn: config.JWT_TOKEN_EXPIRE as string } // Ensuring it matches expected type
 );
 
-    res.status(201).json({ message: 'Login successful.', token });
+    res.status(201).json({ message: 'Login successful.', token:token, userData:userData });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error.', error });
   }

@@ -3,8 +3,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
-// A simple union type listing valid view strings:
-type View = "login" | "register" | "dashboard";
+// Define the union type for views
+export type View = "login" | "register" | "dashboard";
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>("login");
