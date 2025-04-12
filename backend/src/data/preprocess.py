@@ -24,7 +24,7 @@ def process_recipes():
     processed = []
     for _, row in recipes.iterrows():
         processed.append({
-            "_id": row['id'],
+            "originalId": row['id'],  # Add original ID for reference
             "name": row['name'],
             "cookingTime": None if pd.isna(row['minutes']) else row['minutes'],
             "ingredients": row['ingredients'],

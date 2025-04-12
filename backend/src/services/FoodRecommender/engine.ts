@@ -19,6 +19,8 @@ export class RecommenderEngine {
         typeof recipe.nutritionalInfo.calories === "number" &&
         typeof recipe.nutritionalInfo.protein === "number"
     );
+    console.log(this.allRecipes.length, "valid recipes found");
+    
   }
   private async processInBatches(recipes: IRecipe[]): Promise<IRecipe[]> {
     const MIN_SCORE = 20; // Minimum acceptable score
@@ -128,73 +130,68 @@ export class RecommenderEngine {
       MemoryManager.getInstance().releaseMemory("filtered_recipes");
     }
   }
+
   public static async generateWeeklyPlan(userId: string): Promise<void> {
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
-  
-    // Get ALL valid recipes first
-    const allRecipes = await Recipe.find({
-      'nutritionalInfo.calories': { $exists: true },
-      'nutritionalInfo.protein': { $exists: true }
-    });
-  
-    const engine = new RecommenderEngine(user, allRecipes);
-    
-    // Emergency fallback filter
-    const getFallbackRecipes = async (mealType: string) => {
-      // Emergency fallback: 7 generic recipes
-      return Recipe.aggregate([
-        { $match: { 
-          'nutritionalInfo.calories': { $exists: true },
-          'nutritionalInfo.protein': { $exists: true }
-        }},
-        { $sample: { size: 7 } }
-      ]);
-    };
-  
-    const [breakfastRecipes, lunchRecipes, dinnerRecipes] = await Promise.all(
-      ['breakfast', 'lunch', 'dinner'].map(async (mealType) => {
-        try {
-          let recipes = await engine.getRecommendations(mealType);
-          if (recipes.length < 7) recipes = await engine.getRecommendations();
-          if (recipes.length < 7) recipes = await getFallbackRecipes(mealType);
-          return recipes.slice(0, 7);
-        } catch (error) {
-          return await getFallbackRecipes(mealType);
+  const user = await User.findById(userId);
+  if (!user) throw new Error('User not found');
+
+  // Get ALL valid recipes with ObjectIds
+  const allRecipes = await Recipe.find({
+    'nutritionalInfo.calories': { $exists: true },
+    'nutritionalInfo.protein': { $exists: true }
+  });
+
+  const engine = new RecommenderEngine(user, allRecipes);
+
+  // Get recommendations for each meal type
+  const [breakfastRecipes, lunchRecipes, dinnerRecipes] = await Promise.all(
+    ['breakfast', 'lunch', 'dinner'].map(async (mealType) => {
+      try {
+        let recipes = await engine.getRecommendations(mealType);
+        // Fallback 1: If no recipes, use any meal type
+        if (recipes.length < 7) recipes = await engine.getRecommendations();
+        // Fallback 2: If still empty, use random recipes
+        if (recipes.length < 7) {
+          recipes = await Recipe.aggregate([{ $sample: { size: 7 } }]);
         }
-      })
-    );
-    // Generate daily plans
-    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 
-                 'friday', 'saturday', 'sunday'];
-    
-                 // engine.ts
-                 const dailyPlans = days.map((day, idx) => {
-                  // Ensure meal IDs are valid ObjectIds
-                  const mealIds = [
-                    breakfastRecipes[idx]._id, 
-                    lunchRecipes[idx]._id, 
-                    dinnerRecipes[idx]._id
-                  ].filter(Boolean); // Remove invalid IDs
-                
-                  return {
-                    day,
-                    mealIds, // Use the flat array
-                    totalCalories: breakfastRecipes[idx].nutritionalInfo.calories +
-                                   lunchRecipes[idx].nutritionalInfo.calories +
-                                   dinnerRecipes[idx].nutritionalInfo.calories
-                  };
-                });
-  
-    // Create and save plan
-    const plan = await WeeklyPlan.create({
-      user: userId,
-      weekNumber: Math.ceil((Date.now() - user.createdAt.getTime()) / (7 * 86400000)),
-      dailyPlans,
-      totalCalories: dailyPlans.reduce((sum, day) => sum + day.totalCalories, 0)
-    });
-  
-    user.weeklyPlans.push(plan._id as ObjectId);
-    await user.save(); // Ensure user document is updated
+        return recipes.slice(0, 7);
+      } catch (error) {
+        // Final fallback: Hardcoded backup recipes
+        return await Recipe.find().limit(7);
+      }
+    })
+  );
+
+  // Validate recipes before creating the plan
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const dailyPlans = days.map((day, idx) => {
+    const breakfast = breakfastRecipes[idx];
+    const lunch = lunchRecipes[idx];
+    const dinner = dinnerRecipes[idx];
+
+    // Throw error if any meal is missing
+    if (!breakfast?._id || !lunch?._id || !dinner?._id) {
+      throw new Error(`Missing recipes for ${day}`);
+    }
+
+    return {
+      day,
+      mealIds: [breakfast._id, lunch._id, dinner._id], // ✅ Use ObjectIds
+      totalCalories: breakfast.nutritionalInfo.calories +
+                    lunch.nutritionalInfo.calories +
+                    dinner.nutritionalInfo.calories
+    };
+  });
+
+  // Create and save the plan
+  const plan = await WeeklyPlan.create({
+    user: userId,
+    weekNumber: Math.ceil((Date.now() - user.createdAt.getTime()) / (7 * 86400000)),
+    dailyPlans,
+    totalCalories: dailyPlans.reduce((sum, day) => sum + day.totalCalories, 0)
+  });
+
+  user.weeklyPlans.push(plan._id as ObjectId);
+  await user.save();
   }
 }

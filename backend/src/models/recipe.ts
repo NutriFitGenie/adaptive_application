@@ -2,6 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 export interface IRecipe extends Document {
+  originalId: number;
   name: string;
   cookingTime: number;
   ingredients: string[];
@@ -18,6 +19,7 @@ export interface IRecipe extends Document {
 }
 
 const RecipeSchema = new Schema<IRecipe>({
+  originalId: { type: Number, unique: true },
   name: { type: String, required: true },
   cookingTime: { type: Number, required: true },
   ingredients: { type: [String], default: [] },
