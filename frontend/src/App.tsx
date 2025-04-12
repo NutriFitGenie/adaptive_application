@@ -26,7 +26,7 @@ const App: React.FC = () => {
   return (
     <div>
       {view === "login" && <Login onViewChange={handleViewChange} />}
-      {view === "register" && <Register onViewChange={handleViewChange} />}
+      {view === "register" && <Register onViewChange={(v: string) => handleViewChange(v as View)} />}
       {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}
     </div>
   );

@@ -1,81 +1,166 @@
+// src/pages/Register.tsx
 import React, { useState } from "react";
-import axios from "axios";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+// Removed useNavigate since in-app rendering is handling navigation
 
-interface RegisterFormValues {
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface RegisterProps {
-  // Function passed from parent (e.g., App) to change the view
-  onViewChange: (view: "login" | "register" | "dashboard") => void;
-}
-
-const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
-  const [error, setError] = useState<string | null>(null);
-
-  const initialValues: RegisterFormValues = {
+const Register: React.FC<{ onViewChange: (view: "login" | "register" | "dashboard") => void }> = ({ onViewChange }) => {
+  const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
+    height: "",
+    weight: "",
+    dietaryPreferences: "", // Enter as comma separated string (e.g., "vegan, paleo")
+    allergies: "",          // Enter as comma separated string (e.g., "peanuts, milk")
+    fitnessGoal: "weight_loss", // Options: weight_loss, muscle_gain, maintenance
+  });
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validationSchema = Yup.object({
-    username: Yup.string().required("Username is required"),
-    email: Yup.string().email("Invalid email format").required("Email is required"),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-  });
-
-  const handleSubmit = async (values: RegisterFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      // .env
-      const response = await axios.post("http://localhost:3000/api/users/register", values);
-      console.log("Registration Successful:", response.data);
-
-      // After successful registration, navigate to "login" view
+      const response = await fetch("http://localhost:3000/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          // Convert height & weight to numbers
+          height: parseFloat(formData.height),
+          weight: parseFloat(formData.weight),
+          // Convert comma-separated strings into arrays
+          dietaryPreferences: formData.dietaryPreferences
+            ? formData.dietaryPreferences.split(",").map((s) => s.trim())
+            : [],
+          allergies: formData.allergies
+            ? formData.allergies.split(",").map((s) => s.trim())
+            : [],
+          fitnessGoal: formData.fitnessGoal,
+        }),
+      });
+      if (!response.ok) {
+        const msg = await response.text();
+        throw new Error(msg || "Registration failed");
+      }
+      const data = await response.json();
+      console.log(data, "User registered successfully");
+      
+      setSuccess("User registered successfully!");
+      setError("");
+      // Change view to login after successful registration
       onViewChange("login");
-    } catch {
-      setError("Registration failed. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Registration error");
+      setSuccess("");
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
       <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-        {() => (
-          <Form>
-            <div>
-              <label>Username:</label>
-              <Field type="text" name="username" />
-              <ErrorMessage name="username" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <div>
-              <label>Email:</label>
-              <Field type="email" name="email" />
-              <ErrorMessage name="email" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <div>
-              <label>Password:</label>
-              <Field type="password" name="password" />
-              <ErrorMessage name="password" render={(msg) => <div style={{ color: "red" }}>{msg}</div>} />
-            </div>
-            <button type="submit">Register</button>
-          </Form>
-        )}
-      </Formik>
-
-      <p>
-        Already have an account?{" "}
-        <button type="button" onClick={() => onViewChange("login")}>
-          Login
-        </button>
-      </p>
+      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+      {success && <p style={{ color: "green" }}>{success}</p>}
+      <form onSubmit={handleSubmit}>
+        <label>
+          Username:
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Password:
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Height (cm):
+          <input
+            type="number"
+            name="height"
+            value={formData.height}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Weight (kg):
+          <input
+            type="number"
+            name="weight"
+            value={formData.weight}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <br />
+        <label>
+          Dietary Preferences (comma separated):
+          <input
+            type="text"
+            name="dietaryPreferences"
+            value={formData.dietaryPreferences}
+            onChange={handleChange}
+            placeholder="e.g., vegan, paleo"
+          />
+        </label>
+        <br />
+        <label>
+          Allergies (comma separated):
+          <input
+            type="text"
+            name="allergies"
+            value={formData.allergies}
+            onChange={handleChange}
+            placeholder="e.g., peanuts, milk"
+          />
+        </label>
+        <br />
+        <label>
+          Fitness Goal:
+          <select
+            name="fitnessGoal"
+            value={formData.fitnessGoal}
+            onChange={handleChange}
+          >
+            <option value="weight_loss">Weight Loss</option>
+            <option value="muscle_gain">Muscle Gain</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </label>
+        <br />
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 };

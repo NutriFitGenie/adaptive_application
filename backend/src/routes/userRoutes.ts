@@ -7,7 +7,7 @@ import {
   deleteUserController,
   loginUserController,
 } from '../controllers/userController';
-import { authenticateUser } from '../middleware/authMiddleware';
+import { } from '../middleware/authMiddleware';
 
 const userRouter = Router();
 
@@ -146,7 +146,7 @@ userRouter.get('/',getAllUsersController);
  *       500:
  *         description: Server error.
  */
-userRouter.get('/:id',authenticateUser,getUserController);
+userRouter.get('/:id',getUserController);
 
 /**
  * @swagger
@@ -190,7 +190,7 @@ userRouter.get('/:id',authenticateUser,getUserController);
  *       500:
  *         description: Server error.
  */
-userRouter.put('/:id',authenticateUser,updateUserController);
+userRouter.put('/:id',updateUserController);
 
 /**
  * @swagger
@@ -213,7 +213,7 @@ userRouter.put('/:id',authenticateUser,updateUserController);
  *       500:
  *         description: Server error.
  */
-userRouter.delete('/:id',authenticateUser,deleteUserController);
+userRouter.delete('/:id',deleteUserController);
 
 
 export default userRouter;
