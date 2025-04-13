@@ -11,10 +11,10 @@ interface BodyMetricsProps {
     activityLevel: string;
     units: "metric" | "imperial";
   }) => void;
+  units: "metric" | "imperial"; // <-- Add this line
 }
 
-export default function BodyMetrics({ onNext }: BodyMetricsProps) {
-  const [units, setUnits] = useState<"metric" | "imperial">("metric");
+export default function BodyMetrics({ onNext, units }: BodyMetricsProps) {
   const [formData, setFormData] = useState({
     weight: "",
     height: "",
@@ -138,20 +138,6 @@ export default function BodyMetrics({ onNext }: BodyMetricsProps) {
           <option value="active">Active</option>
           <option value="very_active">Very Active</option>
         </select>
-      </div>
-
-      <div className="flex justify-center items-center gap-3 mb-6">
-        <span className="miniText">Metric</span>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            className="sr-only peer"
-            checked={units === "imperial"}
-            onChange={() => setUnits(units === "metric" ? "imperial" : "metric")}
-          />
-          <div className="w-11 h-6 bg-gray-300 rounded-full peer peer-focus:ring-4 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primaryColor1 relative"></div>
-        </label>
-        <span className="miniText">Imperial</span>
       </div>
 
       <div className="text-center">

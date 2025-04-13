@@ -59,6 +59,9 @@ const userRouter = Router();
  *               daysPerWeek:
  *                 type: integer
  *                 example: 3
+ *               targetWeight:
+ *                 type: number
+ *                 example: 70
  *               weight:
  *                 type: number
  *                 example: 75.5

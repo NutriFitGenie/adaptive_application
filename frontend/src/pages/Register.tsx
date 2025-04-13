@@ -7,8 +7,8 @@ import "../styles/onboarding.css";
 import Registration from "./OnboardingViews/0Registration";
 import FitnessGoals from "./OnboardingViews/1FitnessGoals";
 import BodyMetrics from "./OnboardingViews/2BodyMetrics";
-//import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
-//import HealthConditions from "./OnboardingViews/4HealthConditions";
+import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
+import HealthConditions from "./OnboardingViews/4HealthConditions";
 import Complete from "./OnboardingViews/5Complete";
 
 interface RegisterProps {
@@ -25,6 +25,7 @@ interface OnboardingData {
   goal?: string;
   fitnessLevel?: string;
   daysPerWeek?: number;
+  targetWeight?: number;
   weight?: number;
   height?: number;
   neck?: number;
@@ -58,28 +59,25 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {
-        console.error("Unexpected Error:", error);
-        alert("Registration failed, Please try again.");
+      console.error("Unexpected Error:", error);
+      alert("Registration failed, Please try again.");
     }
-
-    onViewChange("dashboard");
   };
 
   const renderStep = () => {
     switch (step) {
       case 0:
-        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />
+        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />;
       case 1:
         return <FitnessGoals onNext={(data) => handleNext(data)} />;
       case 2:
-        return <BodyMetrics onNext={(data) => handleNext(data)} />;
+        return <BodyMetrics onNext={(data) => handleNext(data)} units={onboardingData.units || "metric"} />;
       case 3:
+        return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
+      case 4:
+        return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
+      case 5:
         return <Complete onFinish={handleFinish} />;
-        //return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
-      //case 4:
-        //return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
-      //case 5:
-        //return <Complete onFinish={handleFinish} />;
       default:
         return null;
     }
