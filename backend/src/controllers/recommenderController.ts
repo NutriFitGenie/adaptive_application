@@ -7,17 +7,24 @@ import {ProgressAnalyzer} from '../services/FoodRecommender/progress';
 import WeeklyPlan from '../models/WeeklyPlan';
 
 
-export const getRecommendations = async (req: Request, res: Response):Promise<any> => {
+export const getRecommendations = async (req: Request, res: Response): Promise<any> => {
   try {
-    const plan = await WeeklyPlan.findOne({ user: req.params.userId });
-      console.log('Weekly Plan:', plan);
-      
-    if (plan) return res.status(404).json({ error: 'User not found' });
-    res.json({
-      plan:plan
-      // nutritionalRequirements: updatedUser?.nutritionalRequirements
-      
-    });
+    const userId = req.params.userId;
+    if (!userId) {
+      return res.status(400).json({ error: "Missing userId in URL parameter" });
+    }
+
+    // Find the latest weekly plan for this user and populate the full recipe objects
+    const plan = await WeeklyPlan.findOne({ user: userId })
+      .sort({ weekNumber: -1 })
+      .populate('dailyPlans.mealIds') // This populates the recipe details for each mealId
+      .exec();
+
+    if (!plan) {
+      return res.status(404).json({ error: 'No weekly plan found for this user' });
+    }
+
+    res.json({ plan });
   } catch (error) {
     console.error('Recommendation error:', error);
     res.status(500).json({ error: 'Failed to get recommendations' });

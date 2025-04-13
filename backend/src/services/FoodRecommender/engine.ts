@@ -48,7 +48,7 @@ export class RecommenderEngine {
   
     return this.allRecipes.filter(recipe => {
       if (!recipe.nutritionalInfo) return false;
-  
+      if (recipe.nutritionalInfo.calories > 1500) return false
       // CORRECTED: Check recipe's allergens array instead of ingredients
       const hasAllergens = (recipe.allergens || []).some(allergen => 
         allergySet.has(allergen.toLowerCase())

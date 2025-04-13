@@ -1,42 +1,42 @@
-// Dashboard.tsx
+// src/pages/Dashboard.tsx
 import React, { useState, useEffect } from "react";
 import Home from "./DashBoardViews/Home";
 import Workouts from "./DashBoardViews/Workouts";
 import Nutrition from "./DashBoardViews/Nutrition";
 import Progress from "./DashBoardViews/Progress";
-import Setting from "./DashBoardViews/Setting";
 import History from "./DashBoardViews/History";
+import Setting from "./DashBoardViews/Setting";
+// Import your new FoodProgress component
+import FoodProgress from "./DashBoardViews/FoodProgress";
 import dataStore from "../data/dataStore"; // Global data store object
 import "../styles/dashboard.css"; // Import the CSS
 
-// List of valid sub-view names in the Dashboard
-type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting";
+// List of valid sub-view names in the Dashboard. Added "foodProgress".
+type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting" | "foodProgress";
 
 interface DashboardProps {
   apiBase: string;
   token: string;
-  user: IUser;
+  user: any;
   onLogout: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
-  // On mount, try to get the saved view from localStorage; default to "home" if not found.
-  const savedView = localStorage.getItem("dashboardView") as DashboardView || "home";
+const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
+  // Retrieve the saved view from localStorage; default to "home" if not found.
+  const savedView = (localStorage.getItem("dashboardView") as DashboardView) || "home";
   const [view, setView] = useState<DashboardView>(savedView);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  
   // Retrieve userData from localStorage and parse it.
   const userData = localStorage.getItem("userData");
   const parsedUserData = userData ? JSON.parse(userData) : null;
-  // For debugging:
 
-  // Whenever view changes, persist it in localStorage.
+  // Persist view changes in localStorage.
   useEffect(() => {
     localStorage.setItem("dashboardView", view);
   }, [view]);
 
-  // Get current date in two formats:
-  // fullFormattedDate: e.g., "Monday, March 23, 2025"
-  // currentDay: e.g., "Monday"
+  // Get today's date and formatted strings.
   const todayDate = new Date();
   const today: string = todayDate.toISOString().split("T")[0];
   const fullFormattedDate: string = todayDate.toLocaleDateString("en-US", {
@@ -45,14 +45,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
     month: "long",
     day: "numeric",
   });
-  const currentDay: string = todayDate.toLocaleDateString("en-US", {
-    weekday: "long",
-  });
 
   const [planData, setPlanData] = useState<any>(null);
   const [previousHistory, setPreviousHistory] = useState<{ date: string; data: any }[]>([]);
 
-  // Load today's plan data and previous history when component mounts or today changes.
+  // Load today's plan data and previous history.
   useEffect(() => {
     const todayData = dataStore[today] || null;
     setPlanData(todayData);
@@ -66,11 +63,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
   const handleLogout = () => {
     localStorage.clear();
-    onViewChange("login");
+    onLogout();
   };
 
-
-  // Toggle sidebar (primarily for mobile)
+  // Toggle sidebar (for mobile).
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   // Helper function to change the view and close sidebar.
@@ -79,7 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
     setSidebarOpen(false);
   };
 
-  // Back button behavior: Go back to "home"
+  // Back button behavior: Return to "home".
   const handleBack = () => {
     changeView("home");
   };
@@ -97,6 +93,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             <button onClick={() => changeView("progress")}>Progress</button>
             <button onClick={() => changeView("history")}>History</button>
             <button onClick={() => changeView("setting")}>Setting</button>
+            {/* New tab for FoodProgress */}
+            <button onClick={() => changeView("foodProgress")}>Food Progress</button>
           </nav>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
@@ -106,9 +104,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Updated Top Bar */}
+        {/* Top Bar */}
         <div className="top-bar flex items-center justify-between p-4 bg-gray-100">
-          {/* Left: Hamburger button (visible on mobile) */}
           <div className="flex items-center">
             <button className="hamburger-btn mr-4 md:hidden" onClick={toggleSidebar}>
               &#9776;
@@ -121,15 +118,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             </div>
           </div>
 
-          {/* Center: Minimal text for mobile */}
           <div className="block md:hidden text-center flex-grow">
-  <h2 className="text-lg font-bold text-black">
-    Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-  </h2>
-  <p className="text-xs text-black">{fullFormattedDate}</p>
-</div>
+            <h2 className="text-lg font-bold text-black">
+              Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
+            </h2>
+            <p className="text-xs text-black">{fullFormattedDate}</p>
+          </div>
 
-          {/* Right: Back button if not on home */}
           {view !== "home" && (
             <button 
               onClick={handleBack} 
@@ -140,30 +135,29 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           )}
         </div>
 
-        {/* Optional Header within main content to display username dynamically */}
-        
-         
-        
-
-        {/* Render the view based on selection */}
+        {/* Render the selected view */}
         {view === "home" && (
           <Home
             planData={planData}
             previousHistory={previousHistory}
-            currentDay={currentDay}
             onViewChange={changeView}
           />
         )}
-        {view === "workouts" && <Workouts onViewChange={onViewChange} />}
+        {view === "workouts" && <Workouts onViewChange={changeView} />}
         {view === "nutrition" && (
           <Nutrition
-            apiBase="http://localhost:3000"  // or the appropriate API base URL
+            apiBase="http://localhost:3000" 
             token={parsedUserData ? parsedUserData.token : ""}
             userId={parsedUserData ? parsedUserData._id : ""}
           />
-        )}        {view === "progress" && <Progress onViewChange={onViewChange} />}
-        {view === "history" && <History onViewChange={onViewChange} />}
+        )}
+        {view === "progress" && <Progress onViewChange={changeView} />}
+        {view === "history" && <History onViewChange={changeView} />}
         {view === "setting" && <Setting />}
+        {/* Render the new FoodProgress view */}
+        {view === "foodProgress" && <FoodProgress 
+            token={parsedUserData ? parsedUserData.token : ""}
+            userId={parsedUserData ? parsedUserData._id : ""}   />}
       </main>
     </div>
   );
