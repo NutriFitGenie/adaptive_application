@@ -7,7 +7,7 @@ export class NutritionAI {
 
   async analyzeProgressReport(user: IUser): Promise<string> {
     const prompt = `Generate a nutrition analysis report for a user with:
-      Goal: ${user.fitnessGoals.goal}
+      Goal: ${user.goal}
       Progress: ${user.progress.slice(-2).map(p => p.weight)}
       Recommendations: ...`;
   

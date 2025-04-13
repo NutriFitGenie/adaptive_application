@@ -39,11 +39,11 @@ export class RecommenderEngine {
 
   private filterRecipes(): IRecipe[] {
     const allergySet = new Set(
-      this.user.preferences.allergies?.map(a => a.toLowerCase()) || []
+      this.user.allergies?.map(a => a.toLowerCase()) || []
     );
     
     const dietarySet = new Set(
-      this.user.preferences.dietary?.map(d => d.toLowerCase()) || []
+      this.user.dietaryPreferences?.map(d => d.toLowerCase()) || []
     );
   
     return this.allRecipes.filter(recipe => {
@@ -69,7 +69,7 @@ export class RecommenderEngine {
     
     const { protein = 0, carbs = 0, fats = 0 } = recipe.nutritionalInfo;
     const userReq = this.user.nutritionalRequirements;
-    const { goal } = this.user.fitnessGoals;
+    const goal  = this.user.goal;
   
     // Weight adjustments based on goal
     let proteinWeight = 0.4;
@@ -100,7 +100,7 @@ export class RecommenderEngine {
   private calculateGoalScore(recipe: IRecipe): number {
     if (!recipe?.nutritionalInfo) return 0;
 
-    const { goal } = this.user.fitnessGoals;
+    const goal  = this.user.goal;
     const { dailyCalories } = this.user.nutritionalRequirements;
     const { calories = 0, protein = 0 } = recipe.nutritionalInfo;
 

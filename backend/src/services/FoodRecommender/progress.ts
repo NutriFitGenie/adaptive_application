@@ -5,7 +5,7 @@ export class ProgressAnalyzer {
   static async initializeWeek(user: IUser, weekNumber: number): Promise<void> {
     user.progress.push({
       week: weekNumber,
-      weight: user.fitnessGoals.targetWeight, // Initial weight
+      weight: user.targetWeight, // Initial weight
       bodyFat: 0,
       measurements: {
         waist: 0,
@@ -33,22 +33,22 @@ export class ProgressAnalyzer {
     
     // Update TDEE based on new weight
     user.nutritionalRequirements.tdee = this.calculateTDEE(
-      user.personalInfo.gender,
+      user.gender,
       current.weight,
-      user.personalInfo.height,
-      user.personalInfo.age,
-      user.personalInfo.activityLevel
+      user.height,
+      user.age,
+      user.activityLevel
     );
     
     await user.save();
   }
 
   private static calculateTDEE(
-    gender: string,
-    weight: number,
-    height: number,
-    age: number,
-    activityLevel: string
+    gender: any,
+    weight: any,
+    height: any,
+    age: any,
+    activityLevel: any
   ): number {
     // Mifflin-St Jeor Equation
     const bmr = (gender === 'male')
@@ -66,40 +66,41 @@ export class ProgressAnalyzer {
     return bmr * activityMultipliers[activityLevel];
   }
 
-  public static adjustNutrition(user: IUser, weeklyChange: number): void {
-    const { goal } = user.fitnessGoals;
-    const maintenanceCalories = user.nutritionalRequirements.tdee;
-  
-    // Protein base calculation
-    const proteinBase = {
-      weight_loss: 2.2,
-      muscle_gain: 2.5,
-      maintenance: 1.8
-    }[goal] * user.fitnessGoals.targetWeight;
-  
-    // Update all values
-    user.nutritionalRequirements = {
-      ...user.nutritionalRequirements,
-      protein: Math.round(proteinBase),
-      carbs: Math.round(proteinBase * 1.5), // Carb ratio
-      fats: Math.round(proteinBase * 0.4)    // Fat ratio
-    };
-  
-    // Calories based on goal
-    user.nutritionalRequirements.dailyCalories = Math.round(
-      maintenanceCalories + 
-      (goal === 'muscle_gain' ? 500 : goal === 'weight_loss' ? -500 : 0)
-    );
-  }
+public static adjustNutrition(user: IUser, weeklyChange: number): void {
+  const goal = (user.goal ?? 'maintenance') as "weight_loss" | "muscle_gain" | "maintenance";
+  const maintenanceCalories = user.nutritionalRequirements.tdee;
+  const targetWeight = (user as any).targetWeight 
+  // Protein base calculation
+  const proteinMultiplier = {
+    weight_loss: 2.2,
+    muscle_gain: 2.5,
+    maintenance: 1.8
+  }[goal] ||  1.8;
+  const proteinBase = proteinMultiplier * targetWeight;
+
+  // Update all values
+  user.nutritionalRequirements = {
+    ...user.nutritionalRequirements,
+    protein: Math.round(proteinBase),
+    carbs: Math.round(proteinBase * 1.5), // Carb ratio
+    fats: Math.round(proteinBase * 0.4)    // Fat ratio
+  };
+
+  // Calories based on goal
+  user.nutritionalRequirements.dailyCalories = Math.round(
+    maintenanceCalories + 
+    (goal === 'muscle_gain' ? 500 : goal === 'weight_loss' ? -500 : 0)
+  );
+}
 
   public static initializeNutrition(user: IUser): void {
     // Calculate BMR
     const bmr = this.calculateTDEE(
-      user.personalInfo.gender,
-      user.fitnessGoals.targetWeight, // Use target weight
-      user.personalInfo.height,
-      user.personalInfo.age,
-      user.personalInfo.activityLevel
+      user.gender,
+      user.targetWeight, // Use target weight
+      user.height,
+      user.age,
+      user.activityLevel
     );
   
     // Set initial requirements

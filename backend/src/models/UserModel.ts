@@ -1,26 +1,26 @@
-import { Schema, model, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  age?: number;
+  gender?: string;
   email: string;
   password: string;
-  personalInfo: {
-    age: number;
-    gender: 'male' | 'female' | 'other';
-    height: number;
-    activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
-  };
-  preferences: {
-    dietary: string[];
-    allergies: string[];
-    excludedIngredients: string[];
-    cuisinePreferences: string[];
-  };
-  fitnessGoals: {
-    goal: 'weight_loss' | 'muscle_gain' | 'maintenance';
-    targetWeight: number;
-    timeframeWeeks: number;
-  };
+  goal?: string;
+  fitnessLevel?: string;
+  daysPerWeek?: number;
+  weight?: number;
+  height?: number;
+  neck?: number;
+  waist?: number;
+  activityLevel?: string;
+  units?: "metric" | "imperial";
+  dietaryPreferences: string[];
+  healthConditions?: string[];
+  testingWeekStatus?: boolean;
+  allergies: string[];
+  targetWeight: number;
   nutritionalRequirements: {
     bmr?: number;
     tdee: number;
@@ -29,6 +29,8 @@ export interface IUser extends Document {
     carbs: number;
     fats: number;
   };
+  weeklyPlans: Schema.Types.ObjectId[];
+  preferredRecipes: Schema.Types.ObjectId[];
   progress: Array<{
     week: number;
     weight: number;
@@ -39,67 +41,63 @@ export interface IUser extends Document {
       chest: number;
     };
   }>;
-  weeklyPlans: Schema.Types.ObjectId[];
-  preferredRecipes: Schema.Types.ObjectId[];
-  createdAt: Date;
 }
 
-const UserSchema = new Schema<IUser>({
-  name: { type: String, required: true },
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  personalInfo: {
-    age: { type: Number, required: true },
-    gender: { type: String, enum: ['male', 'female', 'other'], required: true },
-    height: { type: Number, required: true },
-    activityLevel: { 
-      type: String, 
-      enum: ['sedentary', 'light', 'moderate', 'active', 'very_active'],
-      required: true
-    }
-  },
-  preferences: {
-    dietary: { type: [String], default: [] },
+const UserSchema: Schema = new Schema(
+  {
+    firstName: { type: String },
+    lastName: { type: String },
+    age: { type: Number },
+    gender: { type: String },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    goal: { type: String },
+    fitnessLevel: { type: String },
+    daysPerWeek: { type: Number },
+    weight: { type: Number },
+    height: { type: Number },
+    neck: { type: Number },
+    waist: { type: Number },
+    activityLevel: { type: String },
+    units: { type: String, enum: ['metric', 'imperial'] },
+    dietaryPreferences: [{ type: String }],
+    healthConditions: [{ type: String }],
+    testingWeekStatus: {type: Boolean, default: true}, 
+    nutritionalRequirements: {
+      bmr: { type: Number, required: true },
+      tdee: { type: Number, required: true },
+      dailyCalories: { type: Number, required: true },
+      protein: { type: Number, required: true },
+      carbs: { type: Number, required: true },
+      fats: { type: Number, required: true }
+    },
+    weeklyPlans: [{ type: Schema.Types.ObjectId, ref: 'WeeklyPlan' }],
+    preferredRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
     allergies: { type: [String], default: [] },
-    excludedIngredients: { type: [String], default: [] },
-    cuisinePreferences: { type: [String], default: [] }
-  },
-  fitnessGoals: {
-    goal: { type: String, enum: ['weight_loss', 'muscle_gain', 'maintenance'], required: true },
     targetWeight: { type: Number, required: true },
-    timeframeWeeks: { type: Number, min: 1, max: 52, default: 12 }
+    progress: [{
+      week: { type: Number, required: true },
+      weight: { type: Number, required: true },
+      bodyFat: Number,
+      measurements: {
+        waist: Number,
+        hips: Number,
+        chest: Number
+      }
+    }],
   },
-  nutritionalRequirements: {
-    bmr: { type: Number, required: true },
-    tdee: { type: Number, required: true },
-    dailyCalories: { type: Number, required: true },
-    protein: { type: Number, required: true },
-    carbs: { type: Number, required: true },
-    fats: { type: Number, required: true }
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
   },
-  progress: [{
-    week: { type: Number, required: true },
-    weight: { type: Number, required: true },
-    bodyFat: Number,
-    measurements: {
-      waist: Number,
-      hips: Number,
-      chest: Number
-    }
-  }],
-  weeklyPlans: [{ type: Schema.Types.ObjectId, ref: 'WeeklyPlan' }],
-  preferredRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
-}, { timestamps: true });
   
-  UserSchema.virtual('weeklyPlan', {
-    ref: 'WeeklyPlan',
-    localField: 'weeklyPlans',
-    foreignField: '_id',
-    justOne: true
-  });
-  
-  UserSchema.set('toObject', { virtuals: true });
-  UserSchema.set('toJSON', { virtuals: true });
-  
+);
+UserSchema.virtual('weeklyPlan', {
+  ref: 'WeeklyPlan',
+  localField: 'weeklyPlans',
+  foreignField: '_id',
+  justOne: true
+});
 
-export default model<IUser>('User', UserSchema);
+UserSchema.set('toObject', { virtuals: true });
+UserSchema.set('toJSON', { virtuals: true });
+export default mongoose.model<IUser>('User', UserSchema);

@@ -19,6 +19,8 @@ export const createUserController = async (req: Request, res: Response): Promise
   try {
     const {
       username,
+      firstName,
+      lastName,
       email,
       password,
       age,
@@ -32,29 +34,43 @@ export const createUserController = async (req: Request, res: Response): Promise
       fitnessGoal
     } = req.body;
 
+    let effectiveName = username || firstName || "";
+    if (firstName && lastName) {
+      effectiveName = `${firstName.trim()} ${lastName.trim()}`;
+    }
+    
+    if (!effectiveName) {
+      throw new Error("Name is required. Provide a username or firstName.");
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Map incoming fields to match the main branch user model.
     const userData = {
-      name: username,
+      name: effectiveName,                  // required by the index (avoid null value)
+      firstName: firstName,              // map username to firstName
+      lastName: lastName,                     // optional, set blank if not provided
+      age: Number(age),
+      gender,
       email,
       password: hashedPassword,
-      personalInfo: {
-        age: Number(age),
-        gender,
-        height: Number(height),
-        weight: Number(weight),
-        activityLevel
-      },
-      preferences: {
-        dietary: dietaryPreferences.split(',').map((s: string) => s.trim()),
-        allergies: allergies.split(',').map((s: String) => s.trim()),
-        excludedIngredients: []
-      },
-      fitnessGoals: {
-        goal: fitnessGoal,
-        targetWeight: Number(targetWeight),
-        weeklyCommitment: 3
-      },
+      goal: fitnessGoal,                // map fitnessGoal to goal
+      activityLevel,
+      weight: Number(weight),
+      height: Number(height),
+      dietaryPreferences: typeof dietaryPreferences === 'string'
+          ? (dietaryPreferences.trim() !== "" 
+                ? dietaryPreferences.split(',').map((s: string) => s.trim())
+                : [])
+          : (Array.isArray(dietaryPreferences) ? dietaryPreferences : []),
+      allergies: typeof allergies === 'string'
+          ? (allergies.trim() !== ""
+                ? allergies.split(',').map((s: string) => s.trim())
+                : [])
+          : (Array.isArray(allergies) ? allergies : []),
+          // dietaryPreferences: dietaryPreferences.split(',').map((s: string) => s.trim()),
+          // allergies: allergies.split(',').map((s: String) => s.trim()),
+      targetWeight: Number(targetWeight),
+      testingWeekStatus: true,
       nutritionalRequirements: {
         bmr: 0,
         tdee: 0,
@@ -64,7 +80,6 @@ export const createUserController = async (req: Request, res: Response): Promise
         fats: 0
       },
       progress: [],
-      preferredRecipes: []
     };
 
     const newUser = await new User(userData).save();
@@ -121,7 +136,6 @@ export const loginUserController = async (req: Request, res: Response): Promise<
       {
         id: getUser._id,
         email: getUser.email,
-        fitnessGoal: getUser.fitnessGoals,
       },
       config.JWT_SECRET as jwt.Secret,
       {
