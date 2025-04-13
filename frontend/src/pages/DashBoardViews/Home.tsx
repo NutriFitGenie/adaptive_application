@@ -98,7 +98,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
       <div className="App dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today's Workout Plan Card */}
         <div className="plan-card workout-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h2 className="text-2xl font-bold mb-4">Workout Plan for {currentDay}</h2>
+          <h2 className="text-2xl font-bold mb-4 primaryColor1">Workout Plan for {currentDay}</h2>
           {loadingWorkout ? (
             <p>Loading workout plan...</p>
           ) : workoutError ? (
@@ -135,7 +135,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
 
         {/* Today's Meal Plan Card */}
         <div className="plan-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h2 className="text-2xl font-bold mb-4">Meal Plan for {currentDay}</h2>
+          <h2 className="text-2xl font-bold mb-4 primaryColor1">Meal Plan for {currentDay}</h2>
           {planData && planData.mealPlans && planData.mealPlans.length > 0 ? (
             planData.mealPlans.map((mp: any, i: number) => (
               <div key={i} className="mb-4">

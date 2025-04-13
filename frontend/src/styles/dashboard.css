@@ -25,6 +25,7 @@
   bottom: 0;
   transition: transform 0.3s ease-in-out;
   z-index: 1000;
+  padding-top: 40px;
 }
 
 /* Mobile: Hide sidebar by default; show when .open is applied */

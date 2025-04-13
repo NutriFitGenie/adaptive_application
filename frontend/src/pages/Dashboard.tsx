@@ -15,7 +15,7 @@ import { LuDumbbell, LuWheat } from "react-icons/lu";
 import { GiProgression } from "react-icons/gi";
 
 // List of valid sub-view names in the Dashboard
-type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting";
+type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history";
 
 interface DashboardProps {
   onViewChange: (view: "login" | "register" | "dashboard") => void;
@@ -165,19 +165,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
               &#9776;
             </button>
             <div className="hidden md:block">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <div className="titleText font-bold primaryColor1">
                 Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-              </h2>
-              <p className="text-sm text-gray-600">{fullFormattedDate}</p>
+              </div>
+              <p className="text-sm secondaryColor">{fullFormattedDate}</p>
             </div>
           </div>
 
           {/* Center: Minimal text for mobile */}
           <div className="block md:hidden text-center flex-grow">
-            <h2 className="text-lg font-bold text-black">
+            <div className="titleText font-bold primaryColor1">
               Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-            </h2>
-            <p className="text-xs text-black">{fullFormattedDate}</p>
+            </div>
+            <p className="text-xs secondaryColor">{fullFormattedDate}</p>
           </div>
         </div>
 

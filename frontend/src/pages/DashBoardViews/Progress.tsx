@@ -138,7 +138,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
           </div>
         ) : (
           <div className="bg-white border border-gray-200 rounded-b-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Enter Your Actual Workout Data</h2>
+            <h2 className="text-xl font-semibold primaryColor1 mb-4">Enter Your Actual Workout Data</h2>
             {Object.keys(exercisesByDay)
               .sort((a, b) => parseInt(a) - parseInt(b))
               .map((day) => (
@@ -146,8 +146,8 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
                   <h3 className="text-lg font-medium text-gray-700 mb-3">{`Workout (Day ${day})`}</h3>
                   {exercisesByDay[day].map((ex) => (
                     <div key={ex._id} className="bg-gray-50 p-4 mb-4 rounded border border-gray-200">
-                      <p className="font-semibold text-gray-800">
-                        {ex.name} <span className="text-sm text-gray-500">(Recommended: {ex.set1Reps}, {ex.set2Reps}, {ex.set3Reps})</span>
+                      <p className="font-semibold primaryColor1">
+                        {ex.name} <span className="text-sm secondaryColor">(Recommended: {ex.set1Reps}, {ex.set2Reps}, {ex.set3Reps})</span>
                       </p>
                       <div className="mt-2 space-y-2">
                         <label className="block">
