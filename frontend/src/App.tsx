@@ -2,42 +2,25 @@ import React, { useEffect, useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import { IUser } from "./pages/DashBoardViews/types"; // Assuming you have a types file
 
 // Define the union type for views
 export type View = "login" | "register" | "dashboard";
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>("login");
-  const [token, setToken] = useState<string>("");
-  const [user, setUser] = useState<IUser | null>(null);
-  const apiBase = process.env.REACT_APP_API_BASE || "http://localhost:3001";
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    // Check localStorage on first render to see if a token exists
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Optionally validate token on the server or decode it here
       setView("dashboard");
     }
   }, []);
 
-  const handleLoginSuccess = (newToken: string, userData: IUser) => {
-    localStorage.setItem("token", newToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setToken(newToken);
-    setUser(userData);
-    setView("dashboard");
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setToken("");
-    setUser(null);
-    setView("login");
+  // This function is passed to child components so they can change the "view."
+  const handleViewChange = (nextView: View) => {
+    setView(nextView);
   };
 
   return (
@@ -46,7 +29,6 @@ const App: React.FC = () => {
       {view === "login" && <Login onViewChange={handleViewChange} />}
       {view === "register" && <Register onViewChange={handleViewChange} />}
       {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}
-
     </div>
   );
 };

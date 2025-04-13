@@ -6,11 +6,14 @@ import LogoLarge from "../assets/LogoLarge.svg";
 import Logo from "../assets/Logo.svg";
 import "../styles/onboarding.css";
 
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
+// Props from parent
 interface LoginProps {
-  apiBase: string;
-  onLoginSuccess: (token: string, user: any) => void;
-  onRegisterClick: () => void;
+  onViewChange: (view: "login" | "register" | "dashboard") => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onViewChange }) => {
@@ -46,22 +49,22 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
     }
 
     try {
+      debugger;
       const response = await axios.post("http://localhost:3000/api/users/login", formData);
       console.log("Login Successful:", response.data);
       // Example response: { message: 'Login successful.', token: '...', user: {...} }
 
       // 1. Store JWT token in localStorage
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("userData", JSON.stringify(response.data.userData));
+      localStorage.setItem("userData", JSON.stringify(response.data.user));
       //localStorage.setItem("userData",JSON.parse(response.data));
-      const data = JSON.stringify(response.data);
+      //const data = JSON.stringify(response.data);
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {
       console.error("Unexpected Error:", error);
       alert("Invalid login credentials! Please try again.");
-
     }
   };
 
@@ -104,8 +107,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
                 value={formData.password}
                 onChange={handleFormData}
               />
-              <button
-                type="button"
+              <div
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >
@@ -114,7 +116,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
                 ) : (
                   <Eye className="w-5 h-5 secondaryColor cursor-pointer" />
                 )}
-              </button>
+              </div>
             </div>
 
             <div className="mb-6 text-center">
@@ -128,12 +130,12 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   
           <div className="text-center miniText">
             <span className="secondaryColor">Don't have an account?</span>
-            <button
+            <span
               className="primaryColor1 ml-1 hover:underline cursor-pointer"
               onClick={() => onViewChange("register")}
             >
               Sign Up
-            </button>
+            </span>
           </div>
           </div>
         </div>
@@ -145,7 +147,6 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
           </div>
         </div>
       </div>
-
   );
 };
 
