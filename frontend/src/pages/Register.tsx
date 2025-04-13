@@ -7,8 +7,8 @@ import "../styles/onboarding.css";
 import Registration from "./OnboardingViews/0Registration";
 import FitnessGoals from "./OnboardingViews/1FitnessGoals";
 import BodyMetrics from "./OnboardingViews/2BodyMetrics";
-import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
-import HealthConditions from "./OnboardingViews/4HealthConditions";
+//import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
+//import HealthConditions from "./OnboardingViews/4HealthConditions";
 import Complete from "./OnboardingViews/5Complete";
 
 interface RegisterProps {
@@ -74,11 +74,12 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
       case 2:
         return <BodyMetrics onNext={(data) => handleNext(data)} />;
       case 3:
-        return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
-      case 4:
-        return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
-      case 5:
         return <Complete onFinish={handleFinish} />;
+        //return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
+      //case 4:
+        //return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
+      //case 5:
+        //return <Complete onFinish={handleFinish} />;
       default:
         return null;
     }
