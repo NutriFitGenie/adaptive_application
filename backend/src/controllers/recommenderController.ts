@@ -45,21 +45,21 @@ export const getRecommendations = async (req: Request, res: Response):Promise<an
   }
 };
 
-export const trackProgress= async (req: Request, res: Response):Promise<any> => {
-    try {
-      const user = await User.findById(req.body.userId);
-      if (!user) return res.status(404).json({ error: 'User not found' });
+// export const trackProgress= async (req: Request, res: Response):Promise<any> => {
+//     try {
+//       const user = await User.findById(req.body.userId);
+//       if (!user) return res.status(404).json({ error: 'User not found' });
 
-      user.progress.push(req.body.metrics);
-      await user.save();
+//       user.progress.push(req.body.metrics);
+//       await user.save();
       
-      ProgressAnalyzer.analyzeProgress(user);
-      res.json({ status: 'Progress updated' });
-    } catch (error) {
-      console.error('Progress tracking error:', error);
-      res.status(500).json({ error: 'Progress update failed' });
-    }
-}
+//       ProgressAnalyzer.analyzeProgress(user);
+//       res.json({ status: 'Progress updated' });
+//     } catch (error) {
+//       console.error('Progress tracking error:', error);
+//       res.status(500).json({ error: 'Progress update failed' });
+//     }
+// }
 
 // export const trackRecipeChoice= async (req: Request, res: Response):Promise<any> => {
 //     try {

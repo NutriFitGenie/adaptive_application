@@ -18,45 +18,51 @@ import { ProgressAnalyzer } from '../services/FoodRecommender/progress';
 export const createUserController = async (req: Request, res: Response): Promise<void> => {
   try {
     const {
-      username,
       firstName,
       lastName,
       email,
       password,
       age,
       gender,
+      goal,
+      daysPerWeek,
+      neck,
+      waist,
+      units,
+      healthConditions,
       height,
       targetWeight,
       weight,
       activityLevel,
       dietaryPreferences,
       allergies,
-      fitnessGoal
+      fitnessLevel
     } = req.body;
 
-    let effectiveName = username || firstName || "";
-    if (firstName && lastName) {
-      effectiveName = `${firstName.trim()} ${lastName.trim()}`;
-    }
-    
-    if (!effectiveName) {
-      throw new Error("Name is required. Provide a username or firstName.");
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      res.status(400).json({ error: 'Email already in use' });
+      return;
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Map incoming fields to match the main branch user model.
     const userData = {
-      name: effectiveName,                  // required by the index (avoid null value)
-      firstName: firstName,              // map username to firstName
-      lastName: lastName,                     // optional, set blank if not provided
-      age: Number(age),
+      firstName,              
+      lastName,                     
+      age,
       gender,
       email,
       password: hashedPassword,
-      goal: fitnessGoal,                // map fitnessGoal to goal
+      goal,
+      neck,
+      waist,
+      units,
+      healthConditions,
+      fitnessLevel,                
       activityLevel,
-      weight: Number(weight),
-      height: Number(height),
+      daysPerWeek,
+      weight,
+      height,
       dietaryPreferences: typeof dietaryPreferences === 'string'
           ? (dietaryPreferences.trim() !== "" 
                 ? dietaryPreferences.split(',').map((s: string) => s.trim())
@@ -119,7 +125,6 @@ export const loginUserController = async (req: Request, res: Response): Promise<
     // All data if you want send during logging to store in local storage add here 
     const userData = {
       id : getUser?.id,
-      username : getUser?.username,
       email : getUser?.email,
     }
     if (!getUser) {

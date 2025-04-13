@@ -9,6 +9,7 @@ import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
 import recommenderRoutes from './src/routes/FoodRecommenderRoute';
 import weeklyUpdates from './src/routes/weeklyUpdateRoutes';
+import userRoutes from './src/routes/userRoutes';
 
 const envPath = path.resolve(__dirname, '.env');
 // console.log("Loading .env from:", envPath);
