@@ -2,6 +2,7 @@ import pandas as pd
 import ast
 import json
 import math
+import random  # Import random module
 
 def process_recipes():
     # Load raw data
@@ -23,6 +24,9 @@ def process_recipes():
     # Structure output
     processed = []
     for _, row in recipes.iterrows():
+        # Randomly assign a meal type
+        random_meal = random.choice(["breakfast", "lunch", "dinner"])
+        
         processed.append({
             "originalId": row['id'],  # Add original ID for reference
             "name": row['name'],
@@ -36,7 +40,8 @@ def process_recipes():
                 "fats": row['nutrition'][5] if row['nutrition'] and len(row['nutrition']) > 5 else None
             },
             "dietaryTags": row['tags'],
-            "allergens": get_allergens(row['ingredients'])
+            "allergens": get_allergens(row['ingredients']),
+            "mealType": random_meal    # Newly added field with random meal type
         })
     
     # Save to JSON with strict settings (no NaN allowed)

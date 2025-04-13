@@ -176,7 +176,7 @@ export class RecommenderEngine {
   
       return {
         day,
-        mealIds: [breakfast._id, lunch._id, dinner._id], // ✅ Use ObjectIds
+        mealIds: [breakfast._id, lunch._id, dinner._id], 
         totalCalories: breakfast.nutritionalInfo.calories +
                       lunch.nutritionalInfo.calories +
                       dinner.nutritionalInfo.calories
