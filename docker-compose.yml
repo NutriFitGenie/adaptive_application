@@ -12,7 +12,7 @@ services:
       - ./.env
     environment:
       - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true  # Ensures reliable hot reload with nodemon
+      - CHOKIDAR_USEPOLLING=true # Ensures reliable hot reload with nodemon
     command: ["sh", "-c", "npm install && npm run dev"]
     depends_on:
       - mongo
@@ -31,13 +31,13 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "5173:3000"
+      - "5173:5173" # Vite default port
     env_file:
       - ./.env
     environment:
       - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true  # Ensures hot reload for your React dev server (e.g., Vite or CRA)
-    command: bash -c "npm install && npm start"
+      - CHOKIDAR_USEPOLLING=true # Ensures hot reload for your React dev server (e.g., Vite or CRA)
+    command: bash -c "npm install && npm run dev"
     depends_on:
       - backend
 

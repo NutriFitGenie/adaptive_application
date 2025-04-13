@@ -1,0 +1,22 @@
+@import "../index.css";
+
+.onboardingNextButton {
+  height: 46px;
+  width: 75%;
+  background-color: var(--primaryColor1);
+  border-radius: var(--cornerRadius);
+  box-shadow: 3px 4px 5px var(--formText);
+  color: var(--textLight);
+  cursor: pointer;
+}
+.onboardingNextButton:hover {
+  scale: 1.015;
+  background-color: var(--primaryColor2);
+}
+
+.secondaryOnboardingForm {
+  width: 60%;
+  border-radius: var(--cornerRadius);
+  color: var(--textDark);
+  @apply px-4 py-3 shadow-md;
+}

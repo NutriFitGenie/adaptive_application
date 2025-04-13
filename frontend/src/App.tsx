@@ -4,7 +4,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import { IUser } from "./pages/DashBoardViews/types"; // Assuming you have a types file
 
-type View = "login" | "register" | "dashboard";
+// Define the union type for views
+export type View = "login" | "register" | "dashboard";
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>("login");
@@ -40,31 +41,12 @@ const App: React.FC = () => {
   };
 
   return (
-    <div>
-      {view === "login" && (
-        <Login
-          apiBase={apiBase}
-          onLoginSuccess={handleLoginSuccess}
-          onRegisterClick={() => setView("register")}
-        />
-      )}
+    <div className="h-full w-full">
+      {/* Render only one of these at a time based on the current 'view' */}
+      {view === "login" && <Login onViewChange={handleViewChange} />}
+      {view === "register" && <Register onViewChange={handleViewChange} />}
+      {view === "dashboard" && <Dashboard onViewChange={handleViewChange} />}
 
-      {view === "register" && (
-        <Register
-          apiBase={apiBase}
-          onRegisterSuccess={handleLoginSuccess}
-          onLoginClick={() => setView("login")}
-        />
-      )}
-
-      {view === "dashboard" && user && (
-        <Dashboard
-          apiBase={apiBase}
-          token={token}
-          user={user}
-          onLogout={handleLogout}
-        />
-      )}
     </div>
   );
 };

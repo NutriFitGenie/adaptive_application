@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
-import userRoutes from './src/routes/userRoutes'; 
+import workoutRoutes from './src/routes/workoutRoutes';
+import {seedWorkouts} from './src/services/workoutInitalizer'
 import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
 import recommenderRoutes from './src/routes/FoodRecommenderRoute';
@@ -30,6 +31,12 @@ app.get("/", (req, res) => {
 
 // user routes
 app.use('/api/users', userRoutes);
+
+// user routes
+app.use('/api/workout', workoutRoutes);
+app.use('/api/workoutInit', seedWorkouts);
+
+
 app.use('/api/food-recommender', recommenderRoutes);
 app.use('/api/weeklyUpdates', weeklyUpdates);
 // Mount Swagger docs at /api-docs

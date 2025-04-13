@@ -6,53 +6,11 @@ import User, { IUser } from '../models/user';
  * @param data - An object containing username, email, password, and additional fields such as height, weight, dietary preferences, allergies, and fitness goal.
  * @returns The newly created user.
  */
-export const createUser = async (data: {
-  username: string;
-  email: string;
-  password: string;
-  age: number;
-  gender: string;
-  height: number;
-  weight: number;
-  activityLevel: string;
-  dietaryPreferences: string;
-  allergies: string;
-  fitnessGoal: string;
-}): Promise<IUser> => {
-  const mappedData = {
-    name: data.username,
-    email: data.email,
-    password: data.password,
-    personalInfo: {
-      age: data.age,
-      gender: data.gender,
-      height: data.height,
-      activityLevel: data.activityLevel
-    },
-    preferences: {
-      dietary: data.dietaryPreferences.split(',').map(s => s.trim()),
-      allergies: data.allergies.split(',').map(s => s.trim()),
-      excludedIngredients: []
-    },
-    fitnessGoals: {
-      goal: data.fitnessGoal as "weight_loss" | "muscle_gain" | "maintenance",
-      targetWeight: data.weight,
-      weeklyCommitment: 3
-    },
-    nutritionalRequirements: {
-      bmr: 0,
-      tdee: 0,
-      dailyCalories: 0,
-      protein: 0,
-      carbs: 0,
-      fats: 0
-    },
-    progress: [],
-    preferredRecipes: []
-  };
-
-  return await new User(mappedData).save();
+export const createUser = async (userData: Partial<IUser>) => {
+  const user = new User(userData);
+  return await user.save();
 };
+
 
 /**
  * Retrieve a single user by their ID.

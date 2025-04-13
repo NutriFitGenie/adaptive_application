@@ -1,187 +1,104 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
+import axios from "axios";
+
+import LogoLarge from "../assets/LogoLarge.svg";
+import "../styles/onboarding.css";
+
+import Registration from "./OnboardingViews/0Registration";
+import FitnessGoals from "./OnboardingViews/1FitnessGoals";
+import BodyMetrics from "./OnboardingViews/2BodyMetrics";
+import DietaryPreferences from "./OnboardingViews/3DietaryPreferences";
+import HealthConditions from "./OnboardingViews/4HealthConditions";
+import Complete from "./OnboardingViews/5Complete";
 
 interface RegisterProps {
-  apiBase: string;
-  onRegisterSuccess: (token: string, user: any) => void;
-  onLoginClick: () => void;
+  onViewChange: (view: "login" | "register" | "dashboard") => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ apiBase, onRegisterSuccess, onLoginClick }) => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    age: '',
-    gender: 'male',
-    height: '',
-    weight: '',
-    activityLevel: 'moderate',
-    dietaryPreferences: '',
-    allergies: '',
-    fitnessGoal: 'weight_loss'
-  });
-  const [error, setError] = useState('');
+interface OnboardingData {
+  firstName?: string;
+  lastName?: string;
+  age?: string;
+  gender?: string;
+  email?: string;
+  password?: string;
+  goal?: string;
+  fitnessLevel?: string;
+  daysPerWeek?: number;
+  weight?: number;
+  height?: number;
+  neck?: number;
+  waist?: number;
+  activityLevel?: string;
+  units?: "metric" | "imperial";
+  dietaryPreferences?: string[];
+  healthConditions?: string[];
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
+  const [step, setStep] = useState(0);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+
+  const handleNext = (data: Partial<OnboardingData>) => {
+    setOnboardingData((prev) => ({ ...prev, ...data }));
+    setStep((prev) => prev + 1);
+  };
+
+  const handleFinish = async () => {
+    console.log("Final onboarding data:", onboardingData);
     try {
-      const res = await axios.post(`${apiBase}/api/users/register`, {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        age: parseInt(formData.age),
-        gender: formData.gender,
-        height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
-        activityLevel: formData.activityLevel,
-        dietaryPreferences: formData.dietaryPreferences,
-        allergies: formData.allergies,
-        fitnessGoal: formData.fitnessGoal
-      });
-      
-      onRegisterSuccess(res.data.token, res.data.user);
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      const response = await axios.post("http://localhost:3000/api/users/register", onboardingData);
+      console.log("Registration Successful:", response.data);
+
+      // Example response: { message: 'Login successful.', token: '...', user: {...} }
+
+      // 1. Store JWT token in localStorage
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userData", JSON.stringify(response.data.user));
+      // 3. Navigate to the dashboard
+      onViewChange("dashboard");
+    } catch (error) {
+        console.error("Unexpected Error:", error);
+        alert("Registration failed, Please try again.");
+
+    }
+
+    onViewChange("dashboard");
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />
+      case 1:
+        return <FitnessGoals onNext={(data) => handleNext(data)} />;
+      case 2:
+        return <BodyMetrics onNext={(data) => handleNext(data)} />;
+      case 3:
+        return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
+      case 4:
+        return <HealthConditions onNext={(data) => handleNext({ healthConditions: data })} />;
+      case 5:
+        return <Complete onFinish={handleFinish} />;
+      default:
+        return null;
     }
   };
+
   return (
-    <div className="auth-container">
-      <h2>Create New Account</h2>
-      <form onSubmit={handleSubmit} className="auth-form">
-        <div className="form-group">
-          <label>UserName:</label>
-          <input
-            type="text"
-            value={formData.username}
-            onChange={(e) => setFormData({...formData, username: e.target.value})}
-            required
-          />
+    <div className="flex w-full h-full overflow-y-auto">
+      {/* Left Side (form content) */}
+      <div className="flex flex-col justify-center items-center w-full lg:w-1/2 px-6 py-10">
+        {renderStep()}
+      </div>
+
+      {/* Right Side (branding/logo) */}
+      <div className="flex flex-col h-full lg:w-1/2 w-0">
+        <div className="flex justify-end w-full">
+          <img src={LogoLarge} alt="Large Logo" />
         </div>
+      </div>
 
-        <div className="form-group">
-          <label>Email:</label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Password:</label>
-          <input
-            type="password"
-            value={formData.password}
-            onChange={(e) => setFormData({...formData, password: e.target.value})}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Age:</label>
-          <input
-            type="number"
-            value={formData.age}
-            onChange={(e) => setFormData({...formData, age: e.target.value})}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Gender:</label>
-          <select
-            value={formData.gender}
-            onChange={(e) => setFormData({...formData, gender: e.target.value})}
-          >
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Height (cm):</label>
-          <input
-            type="number"
-            step="0.1"
-            value={formData.height}
-            onChange={(e) => setFormData({...formData, height: e.target.value})}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Weight (kg):</label>
-          <input
-            type="number"
-            step="0.1"
-            value={formData.weight}
-            onChange={(e) => setFormData({...formData, weight: e.target.value})}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Activity Level:</label>
-          <select
-            value={formData.activityLevel}
-            onChange={(e) => setFormData({...formData, activityLevel: e.target.value})}
-          >
-            <option value="sedentary">Sedentary</option>
-            <option value="light">Light Exercise</option>
-            <option value="moderate">Moderate Exercise</option>
-            <option value="active">Active</option>
-            <option value="very_active">Very Active</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Dietary Preferences (comma separated):</label>
-          <input
-            type="text"
-            value={formData.dietaryPreferences}
-            onChange={(e) => setFormData({...formData, dietaryPreferences: e.target.value})}
-            placeholder="e.g., vegetarian, gluten-free"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Allergies (comma separated):</label>
-          <input
-            type="text"
-            value={formData.allergies}
-            onChange={(e) => setFormData({...formData, allergies: e.target.value})}
-            placeholder="e.g., nuts, dairy"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Fitness Goal:</label>
-          <select
-            value={formData.fitnessGoal}
-            onChange={(e) => setFormData({...formData, fitnessGoal: e.target.value})}
-          >
-            <option value="weight_loss">Weight Loss</option>
-            <option value="muscle_gain">Muscle Gain</option>
-            <option value="maintenance">Maintenance</option>
-          </select>
-        </div>
-
-        {error && <p className="error-message">{error}</p>}
-
-        <button type="submit" className="auth-button">
-          Register
-        </button>
-
-        <p className="auth-switch">
-          Already have an account?{' '}
-          <button type="button" onClick={onLoginClick} className="switch-button">
-            Login here
-          </button>
-        </p>
-      </form>
     </div>
   );
 };

@@ -105,7 +105,6 @@ export const createUserController = async (req: Request, res: Response): Promise
     });
     
     res.status(201).json({ token, user: newUser});
-
   } catch (error) {
     console.error("Error storing user:", error);
     res.status(500).json({ error: 'Error creating user' });
@@ -117,6 +116,12 @@ export const loginUserController = async (req: Request, res: Response): Promise<
   try {
     const { email, password } = req.body;
     const getUser = await getUserByEmail(email);
+    // All data if you want send during logging to store in local storage add here 
+    const userData = {
+      id : getUser?.id,
+      username : getUser?.username,
+      email : getUser?.email,
+    }
     if (!getUser) {
       return res.status(400).json({ message: 'User not found.' });
     }

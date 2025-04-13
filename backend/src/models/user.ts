@@ -19,8 +19,9 @@ export interface IUser extends Document {
   dietaryPreferences: string[];
   healthConditions?: string[];
   testingWeekStatus?: boolean;
-  allergies: string[];
-  targetWeight: number;
+  
+  allergies?: string[];
+  targetWeight?: number;
   nutritionalRequirements: {
     bmr?: number;
     tdee: number;
@@ -30,7 +31,7 @@ export interface IUser extends Document {
     fats: number;
   };
   // weeklyPlans: Schema.Types.ObjectId[];
-  progress: Array<{
+  progress?: Array<{
     week: number;
     weight: number;
     bodyFat?: number;
