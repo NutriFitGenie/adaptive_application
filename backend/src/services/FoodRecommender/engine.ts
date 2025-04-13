@@ -197,7 +197,7 @@ export class RecommenderEngine {
       totalCalories: dailyPlans.reduce((sum, day) => sum + day.totalCalories, 0)
     });
   
-    user.weeklyPlans.push(plan._id as ObjectId);
+    // user.weeklyPlans.push(plan._id as ObjectId);
     await user.save();
   
     // return { weekNumber: plan.weekNumber };

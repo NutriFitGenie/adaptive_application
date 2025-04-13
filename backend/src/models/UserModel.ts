@@ -29,8 +29,7 @@ export interface IUser extends Document {
     carbs: number;
     fats: number;
   };
-  weeklyPlans: Schema.Types.ObjectId[];
-  preferredRecipes: Schema.Types.ObjectId[];
+  // weeklyPlans: Schema.Types.ObjectId[];
   progress: Array<{
     week: number;
     weight: number;
@@ -71,8 +70,6 @@ const UserSchema: Schema = new Schema(
       carbs: { type: Number, required: true },
       fats: { type: Number, required: true }
     },
-    weeklyPlans: [{ type: Schema.Types.ObjectId, ref: 'WeeklyPlan' }],
-    preferredRecipes: [{ type: Schema.Types.ObjectId, ref: 'Recipe' }],
     allergies: { type: [String], default: [] },
     targetWeight: { type: Number, required: true },
     progress: [{

@@ -69,17 +69,17 @@ export const createUserController = async (req: Request, res: Response): Promise
           : (Array.isArray(allergies) ? allergies : []),
           // dietaryPreferences: dietaryPreferences.split(',').map((s: string) => s.trim()),
           // allergies: allergies.split(',').map((s: String) => s.trim()),
-      targetWeight: Number(targetWeight),
+      targetWeight: Number(targetWeight) || 85,
       testingWeekStatus: true,
-      nutritionalRequirements: {
-        bmr: 0,
+       nutritionalRequirements: {
+         bmr: 0,
         tdee: 0,
-        dailyCalories: 0,
+         dailyCalories: 0,
         protein: 0,
-        carbs: 0,
-        fats: 0
-      },
-      progress: [],
+         carbs: 0,
+         fats: 0
+       },
+       progress: [],
     };
 
     const newUser = await new User(userData).save();

@@ -21,10 +21,8 @@ export const getRecommendations = async (req: Request, res: Response):Promise<an
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     // Force new plan generation if none exists
-    if (user.weeklyPlans.length === 0) {
       await RecommenderEngine.generateWeeklyPlan((user._id as string).toString());
       await user.save();
-    }
 
     // Fetch updated user with populated plan
     const updatedUser = await User.findById(user._id)
@@ -37,8 +35,9 @@ export const getRecommendations = async (req: Request, res: Response):Promise<an
       });
 
     res.json({
-      weeklyPlan: updatedUser?.weeklyPlans[0],
-      nutritionalRequirements: updatedUser?.nutritionalRequirements
+      // weeklyPlan: updatedUser?.weeklyPlans[0],
+      // nutritionalRequirements: updatedUser?.nutritionalRequirements
+      
     });
   } catch (error) {
     console.error('Recommendation error:', error);
@@ -62,20 +61,20 @@ export const trackProgress= async (req: Request, res: Response):Promise<any> => 
     }
 }
 
-export const trackRecipeChoice= async (req: Request, res: Response):Promise<any> => {
-    try {
-      const { userId, recipeId } = req.body;
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ error: 'User not found' });
+// export const trackRecipeChoice= async (req: Request, res: Response):Promise<any> => {
+//     try {
+//       const { userId, recipeId } = req.body;
+//       const user = await User.findById(userId);
+//       if (!user) return res.status(404).json({ error: 'User not found' });
 
-      if (!user.preferredRecipes.includes(recipeId)) {
-        user.preferredRecipes.push(recipeId);
-        await user.save();
-      }
+//       if (!user.preferredRecipes.includes(recipeId)) {
+//         user.preferredRecipes.push(recipeId);
+//         await user.save();
+//       }
       
-      res.json({ status: 'Preference tracked' });
-    } catch (error) {
-      console.error('Recipe tracking error:', error);
-      res.status(500).json({ error: 'Tracking failed' });
-    }
-}
+//       res.json({ status: 'Preference tracked' });
+//     } catch (error) {
+//       console.error('Recipe tracking error:', error);
+//       res.status(500).json({ error: 'Tracking failed' });
+//     }
+// }
