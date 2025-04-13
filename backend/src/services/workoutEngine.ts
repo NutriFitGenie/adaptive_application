@@ -181,7 +181,7 @@ export function generateWeek2Plan(
   performance: PerformanceMetrics,
   bandit: Bandit
 ): { plan: BasePlan; action: ActionType } {
-  const { reps, weight } = basePlan;
+  const { reps } = basePlan;
   const context = [
     userContext.age / 100,
     userContext.goal === "muscle_gain" ? 1 : 0,
@@ -193,31 +193,56 @@ export function generateWeek2Plan(
   const allowedActions: ActionType[] = [];
   const avgReps = reps;
 
-  const overperforming = performance.repRatio >= 1.0;
-  const wellOverperforming = performance.repRatio > 1.2;
-  const underperforming = performance.repRatio < 0.95;
-  const poorlyPerforming = performance.repRatio < 0.7;
-
-  if (wellOverperforming) {
-    allowedActions.push("increase_weight", "increase_reps");
-  } else if (overperforming && avgReps < 12) {
-    allowedActions.push("increase_reps");
-  } else if (overperforming && avgReps >= 12) {
-    allowedActions.push("increase_weight");
-  }
-
-  if (poorlyPerforming) {
-    allowedActions.push("decrease_weight", "decrease_reps");
-  } else if (underperforming && avgReps > 8) {
-    allowedActions.push("decrease_reps");
-  } else if (underperforming && avgReps <= 8) {
+  // Condition for low weight performance.
+  if (performance.weightRatio < 0.8) {
     allowedActions.push("decrease_weight");
+    // Optionally, also reduce reps if current reps are above the minimal threshold.
+    if (avgReps > 8) {
+      allowedActions.push("decrease_reps");
+    }
   }
 
+  // Condition for low rep performance.
+  if (performance.repRatio < 0.95) {
+    if (avgReps > 8) {
+      allowedActions.push("decrease_reps");
+    } else {
+      allowedActions.push("decrease_weight");
+    }
+  }
+  // If rep performance is adequate (>= 1.0), then examine the weight ratio.
+  else if (performance.repRatio >= 1.0) {
+    if (performance.weightRatio >= 1.0) {
+      // Both reps and weight met or exceeded plan: time for progression.
+      if (avgReps < 12) {
+        allowedActions.push("increase_reps");
+      } else {
+        allowedActions.push("increase_weight");
+      }
+    } else if (performance.weightRatio >= 0.8 && performance.weightRatio < 1.0) {
+      // Reps are met, but weight is slightly under target.
+      if (avgReps < 12) {
+        allowedActions.push("increase_reps");
+      } else {
+        allowedActions.push("keep_same");
+      }
+    }
+    // Further challenge if weight performance is exceptionally high.
+    if (performance.weightRatio > 1.1) {
+      if (avgReps < 12) {
+        allowedActions.push("increase_reps");
+      } else {
+        allowedActions.push("increase_weight");
+      }
+    }
+  }
+
+  // Fallback action if no adjustments have been suggested.
   if (allowedActions.length === 0) {
     allowedActions.push("keep_same");
   }
 
+  // Use the bandit algorithm to pick one of the allowed actions.
   const selectedAction = bandit.selectActionFromSubset(context, allowedActions);
   const newPlan = applyAction(basePlan, selectedAction);
 
