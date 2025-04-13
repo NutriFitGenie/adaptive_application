@@ -13,7 +13,10 @@ import "../styles/dashboard.css"; // Import the CSS
 type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting";
 
 interface DashboardProps {
-  onViewChange: (view: "login" | "register" | "dashboard") => void;
+  apiBase: string;
+  token: string;
+  user: IUser;
+  onLogout: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
@@ -65,6 +68,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
     localStorage.clear();
     onViewChange("login");
   };
+
 
   // Toggle sidebar (primarily for mobile)
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);

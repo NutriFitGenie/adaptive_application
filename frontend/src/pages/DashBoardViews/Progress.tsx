@@ -192,4 +192,4 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
   );
 };
 
-export default Progress;
+export default WeeklyProgressForm;

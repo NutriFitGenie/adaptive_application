@@ -6,14 +6,11 @@ import LogoLarge from "../assets/LogoLarge.svg";
 import Logo from "../assets/Logo.svg";
 import "../styles/onboarding.css";
 
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
 
-// Props from parent
 interface LoginProps {
-  onViewChange: (view: "login" | "register" | "dashboard") => void;
+  apiBase: string;
+  onLoginSuccess: (token: string, user: any) => void;
+  onRegisterClick: () => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onViewChange }) => {
@@ -64,6 +61,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
     } catch (error) {
       console.error("Unexpected Error:", error);
       alert("Invalid login credentials! Please try again.");
+
     }
   };
 
@@ -147,6 +145,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
           </div>
         </div>
       </div>
+
   );
 };
 

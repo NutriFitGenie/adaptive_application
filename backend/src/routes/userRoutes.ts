@@ -1,13 +1,8 @@
 import { Router } from 'express';
 import {
-  createUserController,
-  getUserController,
-  getAllUsersController,
-  updateUserController,
-  deleteUserController,
-  loginUserController,
+  loginUserController,createUserController
 } from '../controllers/userController';
-import { authenticateUser } from '../middleware/authMiddleware';
+import { } from '../middleware/authMiddleware';
 
 const userRouter = Router();
 
@@ -176,120 +171,4 @@ userRouter.post('/register', createUserController);
  *         description: Server error.
  */
 userRouter.post('/login', loginUserController);
-
-/**
- * @swagger
- * /api/users:
- *   get:
- *     summary: Retrieve a list of all users
- *     tags: [Users]
- *     responses:
- *       200:
- *         description: A list of users.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       500:
- *         description: Server error.
- */
-userRouter.get('/',getAllUsersController);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   get:
- *     summary: Retrieve a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         description: ID of the user to retrieve
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: A user object.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found.
- *       500:
- *         description: Server error.
- */
-userRouter.get('/:id',authenticateUser,getUserController);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   put:
- *     summary: Update an existing user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         description: ID of the user to update
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       description: Updated user object
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: "jane_doe"
- *               email:
- *                 type: string
- *                 example: "jane@example.com"
- *               password:
- *                 type: string
- *                 example: "newpassword"
- *     responses:
- *       200:
- *         description: User updated successfully.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found.
- *       500:
- *         description: Server error.
- */
-userRouter.put('/:id',authenticateUser,updateUserController);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   delete:
- *     summary: Delete a user by ID
- *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         description: ID of the user to delete
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: User deleted successfully.
- *       404:
- *         description: User not found.
- *       500:
- *         description: Server error.
- */
-userRouter.delete('/:id',authenticateUser,deleteUserController);
-
-
 export default userRouter;

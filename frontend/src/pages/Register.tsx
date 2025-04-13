@@ -60,6 +60,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
     } catch (error) {
         console.error("Unexpected Error:", error);
         alert("Registration failed, Please try again.");
+
     }
 
     onViewChange("dashboard");
@@ -97,6 +98,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
           <img src={LogoLarge} alt="Large Logo" />
         </div>
       </div>
+
     </div>
   );
 };

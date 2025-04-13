@@ -3,11 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { connectMongoDB, connectRedis } from './src/config/db.config';
-import userRoutes from './src/routes/userRoutes';
 import workoutRoutes from './src/routes/workoutRoutes';
+import {seedWorkouts} from './src/services/workoutInitalizer'
 import { swaggerUi, swaggerSpec } from './swagger';
 import config from './src/config/env.config';
-import {seedWorkouts} from './src/services/workoutInitalizer'
+import recommenderRoutes from './src/routes/FoodRecommenderRoute';
+import weeklyUpdates from './src/routes/weeklyUpdateRoutes';
+
+const envPath = path.resolve(__dirname, '.env');
+// console.log("Loading .env from:", envPath);
+
+dotenv.config({ path: envPath });
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
@@ -31,6 +37,8 @@ app.use('/api/workout', workoutRoutes);
 app.use('/api/workoutInit', seedWorkouts);
 
 
+app.use('/api/food-recommender', recommenderRoutes);
+app.use('/api/weeklyUpdates', weeklyUpdates);
 // Mount Swagger docs at /api-docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
