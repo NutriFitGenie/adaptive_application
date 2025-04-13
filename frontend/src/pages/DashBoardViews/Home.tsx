@@ -98,7 +98,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
       <div className="App dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today's Workout Plan Card */}
         <div className="plan-card workout-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h2 className="text-2xl font-bold mb-4 primaryColor1">Workout Plan for {currentDay}</h2>
+          <h2 className="text-2xl font-bold mb-4 primaryColor1">Workout Plan for the day</h2>
           {loadingWorkout ? (
             <p>Loading workout plan...</p>
           ) : workoutError ? (
@@ -115,7 +115,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
               </div>
             ))
           ) : (
-            <p>No workout plan available for {currentDay}.</p>
+            <p>No workout plan available for the day.</p>
           )}
           <div className="workout-actions mt-4 flex gap-2">
             <button
@@ -133,33 +133,6 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
           </div>
         </div>
 
-        {/* Today's Meal Plan Card */}
-        <div className="plan-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h2 className="text-2xl font-bold mb-4 primaryColor1">Meal Plan for {currentDay}</h2>
-          {planData && planData.mealPlans && planData.mealPlans.length > 0 ? (
-            planData.mealPlans.map((mp: any, i: number) => (
-              <div key={i} className="mb-4">
-                <p className="text-base">
-                  <strong>{mp.mealType}</strong>: {mp.description} ({mp.calories} cal)
-                </p>
-              </div>
-            ))
-          ) : (
-            <p>No meal plan available for {currentDay}.</p>
-          )}
-          <div className="workout-actions mt-8 flex gap-2">
-            <button 
-              className="view-complete-meal px-4 py-2 bg-primaryColor1 text-white rounded-md"
-              onClick={() => {
-                onViewChange("nutrition")}}
-            >
-              View Complete Meal
-            </button>
-            <button className="start-meal px-4 py-2 bg-primaryColor2 text-white rounded-md">
-              Start Meal
-            </button>
-          </div>
-        </div>
       </div>
 
     </>
