@@ -1,13 +1,94 @@
-body {
+@import url("https://fonts.googleapis.com/css?family=Inter");
+
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Main app colours */
+  --background: white;
+  --primaryColor1: #029aa5;
+  --primaryColor2: #04b9c6;
+  --secondaryColor: #70706f;
+
+  /* Main text colour */
+  --textLight: white;
+  --textDark: #70706f;
+  /* This is also used as a shadow */
+  --formText: #70706f50;
+
+  /* Custom colours */
+  --error: #c60452;
+  --warning: #fcfc18;
+  --success: #12de31;
+
+  /* Custom variables */
+  --cornerRadius: 30px;
+  --titleTextSize: 30px;
+  --secondaryTextSize: 20px;
+  --miniTextSize: 13px;
+  --regularTextSize: 16px;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  font-family: "Inter", sans-serif;
+  background-color: var(--background);
+  font-size: var(--regularTextSize);
+  min-width: 300px;
+}
+
+/* Root variable classes */
+.background {
+  background-color: var(--background);
+}
+.primaryColor1BG {
+  background-color: var(--primaryColor1);
+}
+.primaryColor1 {
+  color: var(--primaryColor1);
+}
+.primaryColor2BG {
+  background-color: var(--primaryColor2);
+}
+.primaryColor2 {
+  color: var(--primaryColor2);
+}
+.secondaryColor {
+  color: var(--secondaryColor);
+}
+
+.textLight {
+  color: var(--textLight);
+}
+.textDark {
+  color: var(--textDark);
+}
+.formText {
+  color: var(--formText);
+}
+
+.error {
+  background-color: var(--error);
+}
+.warning {
+  background-color: var(--warning);
+}
+.success {
+  background-color: var(--success);
+}
+
+.titleText {
+  font-size: var(--titleTextSize);
+  font-weight: bold;
+}
+.secondaryText {
+  font-size: var(--secondaryTextSize);
+}
+.miniText {
+  font-size: var(--miniTextSize);
+  font-weight: bold;
 }

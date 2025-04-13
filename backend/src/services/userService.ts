@@ -3,17 +3,14 @@ import User, { IUser } from '../models/user';
 
 /**
  * Create a new user in the database.
- * @param data - An object containing username, email, and password.
+ * @param data - An object containing username, email, password, and additional fields such as height, weight, dietary preferences, allergies, and fitness goal.
  * @returns The newly created user.
  */
-export const createUser = async (data: {
-  username: string;
-  email: string;
-  password: string;
-}): Promise<IUser> => {
-  const user = new User(data);
+export const createUser = async (userData: Partial<IUser>) => {
+  const user = new User(userData);
   return await user.save();
 };
+
 
 /**
  * Retrieve a single user by their ID.
@@ -25,6 +22,11 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
 };
 
 
+/**
+ * Retrieve a single user by their email.
+ * @param email - The user’s email.
+ * @returns The user document or null if not found.
+ */
 export const getUserByEmail = async (email: string): Promise<IUser | null> => {
   return await User.findOne({ email });
 };
@@ -40,12 +42,21 @@ export const getAllUsers = async (): Promise<IUser[]> => {
 /**
  * Update a user by their ID.
  * @param id - The user’s unique identifier.
- * @param data - An object containing fields to update.
+ * @param data - An object containing fields to update, including username, email, password, height, weight, dietaryPreferences, allergies, and fitnessGoal.
  * @returns The updated user document or null if not found.
  */
 export const updateUser = async (
   id: string,
-  data: Partial<{ username: string; email: string; password: string }>
+  data: Partial<{
+    username: string;
+    email: string;
+    password: string;
+    height: number;
+    weight: number;
+    dietaryPreferences: string;
+    allergies: string;
+    fitnessGoal: string;
+  }>
 ): Promise<IUser | null> => {
   return await User.findByIdAndUpdate(id, data, { new: true });
 };
