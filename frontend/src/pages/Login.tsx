@@ -106,7 +106,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
                 value={formData.password}
                 onChange={handleFormData}
               />
-              <button
+              <div
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
@@ -116,7 +116,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
                 ) : (
                   <Eye className="w-5 h-5 secondaryColor cursor-pointer" />
                 )}
-              </button>
+              </div>
             </div>
 
             <div className="mb-6 text-center">
@@ -130,12 +130,12 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   
           <div className="text-center miniText">
             <span className="secondaryColor">Don't have an account?</span>
-            <button
+            <span
               className="primaryColor1 ml-1 hover:underline cursor-pointer"
               onClick={() => onViewChange("register")}
             >
               Sign Up
-            </button>
+            </span>
           </div>
           </div>
         </div>
