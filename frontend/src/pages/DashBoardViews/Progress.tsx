@@ -124,8 +124,8 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
 
   return (
     <div className="App flex justify-center">
-      <div className="w-full max-w-4xl mt-8">
-        <header className="bg-gray-800 text-white text-center py-6 rounded-t-lg shadow-md">
+      <div className="w-full mt-8">
+        <header className="primaryColor1BG text-white text-center py-6 rounded-t-lg shadow-md">
           <h2 className="text-2xl md:text-3xl font-bold">Workout Progress Tracker</h2>
           <p className="text-sm md:text-base mt-1">Current Week: {week}</p>
         </header>
@@ -179,7 +179,7 @@ const Progress: React.FC<WorkoutProps> = ({ onViewChange }) => {
                   ))}
                   <button
                     onClick={() => handleSubmitDay(day)}
-                    className="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700"
+                    className="primaryColor1BG text-white px-6 py-2 rounded cursor-pointer"
                   >
                     Submit Day's Workout
                   </button>

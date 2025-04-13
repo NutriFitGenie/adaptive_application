@@ -186,7 +186,7 @@ const WorkoutDashboard: React.FC = () => {
             </div>
           ))}
         </div>
-        <button onClick={handleSubmitTesting} className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button onClick={handleSubmitTesting} className="mt-6 primaryColor1BG text-white px-4 py-2 rounded cursor-pointer">
           Submit Testing Week
         </button>
       </div>
@@ -213,7 +213,7 @@ const WorkoutDashboard: React.FC = () => {
               <h3 className="text-xl font-semibold text-gray-700 mb-3">{`Workout ${idx + 1} (Day ${day})`}</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 table-auto">
-                  <thead className="bg-blue-700">
+                  <thead className="primaryColor1BG">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Exercise</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Weight (KG)</th>
