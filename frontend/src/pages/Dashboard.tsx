@@ -62,7 +62,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   }, [today]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.clear();
     onViewChange("login");
   };
 
