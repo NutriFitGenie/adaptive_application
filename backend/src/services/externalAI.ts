@@ -1,6 +1,6 @@
 // services/externalAI.ts
 import OpenAI from 'openai';
-import { IUser } from '../models/UserModel';
+import { IUser } from '../models/user';
 
 export class NutritionAI {
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

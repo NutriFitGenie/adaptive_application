@@ -7,7 +7,7 @@ import {
   deleteUser,
   getUserByEmail,
 } from '../services/userService';
-import User from './../models/UserModel'; // Import the User model
+import User from '../models/user'; // Import the User model
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config/env.config';

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { IUser } from '../models/UserModel';
-import User from '../models/UserModel';
+import { IUser } from '../models/user';
+import User from '../models/user';
 import Recipe from '../models/recipe';
 import {RecommenderEngine } from '../services/FoodRecommender/engine';
 import {ProgressAnalyzer} from '../services/FoodRecommender/progress';

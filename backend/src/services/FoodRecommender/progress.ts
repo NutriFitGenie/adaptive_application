@@ -1,5 +1,5 @@
-import { IUser } from '../../models/UserModel';
-import User from '../../models/UserModel';
+import { IUser } from '../../models/user';
+import User from '../../models/user';
 
 export class ProgressAnalyzer {
   static async initializeWeek(user: IUser, weekNumber: number): Promise<void> {

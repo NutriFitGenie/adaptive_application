@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import WeeklyPlan from '../models/WeeklyPlan';
 import WeeklyProgress from '../models/WeeklyProgress';
 import { RecommenderEngine } from '../services/FoodRecommender/engine';
-import User, { IUser } from '../models/UserModel';
+import User, { IUser } from '../models/user';
 
 
 

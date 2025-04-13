@@ -1,5 +1,5 @@
 // src/services/userService.ts
-import User, { IUser } from '../models/UserModel';
+import User, { IUser } from '../models/user';
 
 /**
  * Create a new user in the database.

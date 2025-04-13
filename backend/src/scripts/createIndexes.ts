@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import User from '../models/UserModel';
+import User from '../models/user';
 import Recipe from '../models/recipe';
 
 async function createIndexes() {

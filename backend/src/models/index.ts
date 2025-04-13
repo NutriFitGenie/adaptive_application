@@ -1,4 +1,4 @@
-import User from './UserModel';
+import User from './user';
 import Recipe from './recipe';
 import WeeklyPlan from './WeeklyPlan';
 import WeeklyProgress from './WeeklyProgress';

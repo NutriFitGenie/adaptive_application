@@ -1,7 +1,7 @@
-import { IUser } from "../../models/UserModel";
+import { IUser } from "../../models/user";
 import { IRecipe } from "../../models/recipe";
 import Recipe from "../../models/recipe";
-import User from "../../models/UserModel";
+import User from "../../models/user";
 import { ProgressAnalyzer } from "./progress";
 import WeeklyPlan from "../../models/WeeklyPlan";
 import { ObjectId } from "mongoose";
