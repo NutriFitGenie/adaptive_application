@@ -4,10 +4,15 @@ import Home from "./DashBoardViews/Home";
 import Workouts from "./DashBoardViews/Workouts";
 import Nutrition from "./DashBoardViews/Nutrition";
 import Progress from "./DashBoardViews/Progress";
-import Setting from "./DashBoardViews/Setting";
 import History from "./DashBoardViews/History";
 import dataStore from "../data/dataStore"; // Global data store object
 import "../styles/dashboard.css"; // Import the CSS
+
+import Logo from "../assets/Logo.svg"; // Logo for the sidebar
+
+import { FaHome, FaHistory } from "react-icons/fa";
+import { LuDumbbell, LuWheat } from "react-icons/lu";
+import { GiProgression } from "react-icons/gi";
 
 // List of valid sub-view names in the Dashboard
 type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting";
@@ -15,6 +20,34 @@ type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" 
 interface DashboardProps {
   onViewChange: (view: "login" | "register" | "dashboard") => void;
 }
+
+const sidebarItems = [
+  {
+    label: "Home",
+    value: "home",
+    icon: <FaHome className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Workouts",
+    value: "workouts",
+    icon: <LuDumbbell className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Nutrition",
+    value: "nutrition",
+    icon: <LuWheat className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Progress",
+    value: "progress",
+    icon: <GiProgression className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "History",
+    value: "history",
+    icon: <FaHistory className="text-3xl primaryColor1" />,
+  }
+]
 
 const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   // On mount, try to get the saved view from localStorage; default to "home" if not found.
@@ -85,14 +118,36 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-top">
-          <div className="logo">NutriFitGenie</div>
-          <nav className="nav-items">
-            <button onClick={() => changeView("home")}>Home</button>
-            <button onClick={() => changeView("workouts")}>Workouts</button>
-            <button onClick={() => changeView("nutrition")}>Nutrition</button>
-            <button onClick={() => changeView("progress")}>Progress</button>
-            <button onClick={() => changeView("history")}>History</button>
-            <button onClick={() => changeView("setting")}>Setting</button>
+          <div className="flex items-center logo">
+            <img
+                src={Logo}
+                alt="Logo"
+                className="h-16 w-16"
+            />
+            <div className="ml-3 secondaryText">NutriFitGenie</div>
+          </div>
+          <nav className="flex flex-col items-center nav-items">
+            {sidebarItems.map((item) => {
+              const isActive = view === item.value;
+              return (
+                <button
+                  key={item.value}
+                  onClick={() => changeView(item.value as DashboardView)}
+                  className={`flex items-center gap-3 w-full px-4 py-2 my-2 rounded-full transition-colors ${
+                    isActive ? "bg-primaryColor1 text-white" : "text-gray-800 hover:bg-gray-200"
+                  }`}
+                >
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      isActive ? "bg-white text-primaryColor1" : "bg-gray-100 text-primaryColor1"
+                    }`}
+                  >
+                    {item.icon}
+                  </div>
+                  <span className="text-base font-medium">{item.label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
@@ -103,7 +158,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
       {/* Main Content */}
       <main className="main-content">
         {/* Updated Top Bar */}
-        <div className="top-bar flex items-center justify-between p-4 bg-gray-100">
+        <div className="top-bar flex items-center justify-between p-4">
           {/* Left: Hamburger button (visible on mobile) */}
           <div className="flex items-center">
             <button className="hamburger-btn mr-4 md:hidden" onClick={toggleSidebar}>
@@ -119,21 +174,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
 
           {/* Center: Minimal text for mobile */}
           <div className="block md:hidden text-center flex-grow">
-  <h2 className="text-lg font-bold text-black">
-    Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-  </h2>
-  <p className="text-xs text-black">{fullFormattedDate}</p>
-</div>
-
-          {/* Right: Back button if not on home */}
-          {view !== "home" && (
-            <button 
-              onClick={handleBack} 
-              className="back-btn flex items-center justify-center rounded-full bg-primaryColor1 w-10 h-10 text-white shadow-md"
-            >
-              &larr;
-            </button>
-          )}
+            <h2 className="text-lg font-bold text-black">
+              Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
+            </h2>
+            <p className="text-xs text-black">{fullFormattedDate}</p>
+          </div>
         </div>
 
         {/* Optional Header within main content to display username dynamically */}
@@ -154,7 +199,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         {view === "nutrition" && <Nutrition />}
         {view === "progress" && <Progress onViewChange={onViewChange} />}
         {view === "history" && <History onViewChange={onViewChange} />}
-        {view === "setting" && <Setting />}
       </main>
     </div>
   );
