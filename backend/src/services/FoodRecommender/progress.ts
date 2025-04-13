@@ -3,9 +3,10 @@ import User from '../../models/user';
 
 export class ProgressAnalyzer {
   static async initializeWeek(user: IUser, weekNumber: number): Promise<void> {
-    user.progress.push({
+    if (user.progress) {
+      user.progress.push({
       week: weekNumber,
-      weight: user.targetWeight, // Initial weight
+      weight: user.targetWeight ?? 85, // Initial weight with default value of 0
       bodyFat: 0,
       measurements: {
         waist: 0,
@@ -16,32 +17,33 @@ export class ProgressAnalyzer {
     
     await user.save();
   }
+}
 
-  static async analyzeProgress(user: IUser): Promise<void> {
-    if (user.progress.length < 2) return;
+  // static async analyzeProgress(user: IUser): Promise<void> {
+  //   if (user.progress.length < 2) return;
 
-    const currentWeek = user.progress.length;
-    const current = user.progress[currentWeek - 1];
-    const previous = user.progress[currentWeek - 2];
+  //   const currentWeek = user.progress.length;
+  //   const current = user.progress[currentWeek - 1];
+  //   const previous = user.progress[currentWeek - 2];
 
-    // Calculate weight change
-    const weightChange = current.weight - previous.weight;
-    const weeklyChange = weightChange / ((currentWeek - 1) * 7); // Average daily change
+  //   // Calculate weight change
+  //   const weightChange = current.weight - previous.weight;
+  //   const weeklyChange = weightChange / ((currentWeek - 1) * 7); // Average daily change
 
-    // Update nutritional requirements
-    this.adjustNutrition(user, weeklyChange);
+  //   // Update nutritional requirements
+  //   this.adjustNutrition(user, weeklyChange);
     
-    // Update TDEE based on new weight
-    user.nutritionalRequirements.tdee = this.calculateTDEE(
-      user.gender,
-      current.weight,
-      user.height,
-      user.age,
-      user.activityLevel
-    );
+  //   // Update TDEE based on new weight
+  //   user.nutritionalRequirements.tdee = this.calculateTDEE(
+  //     user.gender,
+  //     current.weight,
+  //     user.height,
+  //     user.age,
+  //     user.activityLevel
+  //   );
     
-    await user.save();
-  }
+  //   await user.save();
+  // }
 
   private static calculateTDEE(
     gender: any,
