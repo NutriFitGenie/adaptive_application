@@ -84,9 +84,9 @@ export const getUpdatedPlan = async (req: Request, res: Response):Promise<any> =
     newPlanData.weekNumber = weekNumber;
 
     // Create a new WeeklyPlan document instead of replacing existing weeks.
-    const newWeeklyPlan = await WeeklyPlan.create(newPlanData);
+    // const newWeeklyPlan = await WeeklyPlan.create(newPlanData);
 
-    res.status(201).json({ message: "Weekly progress updated", progress, weeklyPlan: newWeeklyPlan });
+    res.status(201).json({ message: "Weekly progress updated", progress, weeklyPlan: newPlanData });
   } catch (error) {
     console.error("Error in weeklyUpdatesController:", error);
     res.status(500).json({ message: "Error submitting progress", error });

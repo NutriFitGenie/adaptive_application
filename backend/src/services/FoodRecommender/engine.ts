@@ -182,11 +182,17 @@ export class RecommenderEngine {
                       dinner.nutritionalInfo.calories
       };
     });
+
+    const lastPlan = await WeeklyPlan.find({ user: userId }).sort({ weekNumber: -1 }).limit(1);
+    let weekNumber = 1;
+    if (lastPlan && lastPlan.length > 0) {
+      weekNumber = lastPlan[0].weekNumber + 1;
+    }
   
     // Create and save the plan
     const plan = await WeeklyPlan.create({
       user: userId,
-      weekNumber: Math.ceil((Date.now() - user.createdAt.getTime()) / (7 * 86400000)),
+      weekNumber,
       dailyPlans,
       totalCalories: dailyPlans.reduce((sum, day) => sum + day.totalCalories, 0)
     });
