@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-const userId = "67e1627cebe27e5f8285ec21";
 
 interface HomeProps {
   planData: any;
@@ -53,6 +52,9 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
     setLoadingWorkout(true);
     setWorkoutError("");
     try {
+      const userdataString = localStorage.getItem("userData");
+      const userdata = userdataString ? JSON.parse(userdataString) : null;
+      const userId = userdata.id;
       const response = await fetch(`http://localhost:3000/api/workout/getCurrentWorkout?userId=${userId}`);
       if (!response.ok) throw new Error("Failed to fetch current workout plan");
       const data: PlannedExercise[] = await response.json();
@@ -73,6 +75,9 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
   // Fetch workout history using the same logic as before.
   const fetchWorkoutHistory = async () => {
     try {
+      const userdataString = localStorage.getItem("userData");
+      const userdata = userdataString ? JSON.parse(userdataString) : null;
+      const userId = userdata.id;
       const response = await fetch(`http://localhost:3000/api/workout/getWorkout?userId=${userId}`);
       if (!response.ok) {
         throw new Error("Failed to fetch workout history");
@@ -105,12 +110,7 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
                 {exercise.description && <p>{exercise.description}</p>}
                 <ul className="list-disc ml-5">
                   <li>Category: {exercise.category}</li>
-                  <li>Difficulty: {exercise.difficulty}</li>
                   <li>Weight: {exercise.weight} KG</li>
-                  <li>
-                    Reps: {exercise.set1Reps} / {exercise.set2Reps} / {exercise.set3Reps}
-                  </li>
-                  {exercise.oneRepMax !== undefined && <li>1RM: {exercise.oneRepMax}</li>}
                 </ul>
               </div>
             ))
@@ -121,12 +121,13 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
             <button
               className="view-complete-workout px-4 py-2 bg-primaryColor1 text-white rounded-md"
               onClick={() => {
-                console.log("click");
                 onViewChange("workouts")}}
             >
               View Complete Workout
             </button>
-            <button className="start-workout px-4 py-2 bg-primaryColor2 text-white rounded-md">
+            <button className="start-workout px-4 py-2 bg-primaryColor2 text-white rounded-md"
+            onClick={() => {
+              onViewChange("progress")}}>
               Start Workout
             </button>
           </div>
@@ -157,61 +158,6 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
         </div>
       </div>
 
-      {/* Previous History Section using fetched history data */}
-      <div className="plan-card history-card bg-white border border-gray-200 rounded-md shadow-sm p-4 mt-8">
-        <h3 className="text-2xl font-bold mb-4">Previous History</h3>
-        {fetchedHistory.length > 0 ? (
-          fetchedHistory.map((ex) => (
-            <div key={ex._id} className="history-entry mb-6 border-b border-gray-200 pb-3">
-              <h4 className="text-xl font-semibold text-gray-700 mb-3">{ex.name}</h4>
-              {ex.history && ex.history.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 table-auto">
-                    <thead className="primaryColor1BG">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Week
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Weight (kg)
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Planned Sets
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Actual Sets
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Performance Ratio
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                          Performance
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {ex.history.map((entry, idx) => (
-                        <tr key={idx} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.week}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.weight}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.planned.join(", ")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.actual.join(", ")}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceRatio}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{entry.performanceClass}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-gray-600">No history available for this exercise.</p>
-              )}
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-600">No previous history available.</p>
-        )}
-      </div>
     </>
   );
 };

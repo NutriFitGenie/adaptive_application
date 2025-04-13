@@ -32,7 +32,6 @@ export const createUserController = async (req: Request, res: Response) => {
       dietaryPreferences,
       healthConditions,
     } = req.body;
-
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ error: 'Email already in use' });
@@ -95,7 +94,6 @@ export const loginUserController = async (req: Request, res: Response) => {
   try {
     const {email, password} = req.body;
     const getUser = await getUserByEmail(email);
-    console.log(getUser);
     // All data if you want send during logging to store in local storage add here 
     const userData = {
       id : getUser?.id,

@@ -18,6 +18,7 @@ export interface IUser extends Document {
   units?: "metric" | "imperial";
   dietaryPreferences?: string[];
   healthConditions?: string[];
+  testingWeekStatus?: boolean;
 }
 
 const UserSchema: Schema = new Schema(
@@ -39,6 +40,7 @@ const UserSchema: Schema = new Schema(
     units: { type: String, enum: ['metric', 'imperial'] },
     dietaryPreferences: [{ type: String }],
     healthConditions: [{ type: String }],
+    testingWeekStatus: {type: Boolean, default: true}, 
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

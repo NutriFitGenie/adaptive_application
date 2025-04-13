@@ -58,7 +58,6 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
       localStorage.setItem("userData", JSON.stringify(response.data.userData));
       //localStorage.setItem("userData",JSON.parse(response.data));
       const data = JSON.stringify(response.data);
-      console.log(data);
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");

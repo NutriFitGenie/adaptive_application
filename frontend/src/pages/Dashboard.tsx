@@ -111,7 +111,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             </button>
             <div className="hidden md:block">
               <h2 className="text-2xl font-bold text-gray-800">
-                Welcome, {parsedUserData ? parsedUserData.username : "User"}!
+                Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
               </h2>
               <p className="text-sm text-gray-600">{fullFormattedDate}</p>
             </div>
@@ -120,7 +120,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           {/* Center: Minimal text for mobile */}
           <div className="block md:hidden text-center flex-grow">
   <h2 className="text-lg font-bold text-black">
-    Welcome, {parsedUserData ? parsedUserData.username : "User"}!
+    Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
   </h2>
   <p className="text-xs text-black">{fullFormattedDate}</p>
 </div>

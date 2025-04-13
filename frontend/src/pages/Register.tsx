@@ -54,7 +54,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
 
       // 1. Store JWT token in localStorage
       localStorage.setItem("token", response.data.token);
-
+      localStorage.setItem("userData", JSON.stringify(response.data.user));
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {

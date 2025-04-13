@@ -225,8 +225,10 @@ export const updateWorkout = async ({
     const actualResults = await actualExercise.insertMany(actualDocuments);
 
     const user = await User.findById(userId);
-    if (user != null && currentDay >= user.workoutDays) {
+    if (user != null && currentDay >= user.daysPerWeek) {
       const bandit = new Bandit(0.2, 5);
+      await bandit.load(userId); // Load previous model
+
       const plannedDocuments: Partial<IPlannedExercise>[] = [];
 
       const plannedWorkouts = await plannedExercise.find({ userId, week: currentWeek });
@@ -250,15 +252,15 @@ export const updateWorkout = async ({
         };
 
         const userContext = {
-          age: 25,
-          goal:"fat_loss"
+          age: user.age,
+          goal: user.goal as string
         };
 
         const { plan: newPlan, action } = generateWeek2Plan({
           weight: plannedExercise.weight ?? 0,
-          reps: plannedExercise.set1Reps ?? 6, // assume rep = set1Reps
+          reps: Math.round(((plannedExercise.set1Reps ?? 0) + (plannedExercise.set2Reps ?? 0) + (plannedExercise.set3Reps ?? 0)) / 3),
         }, userContext, performance, bandit);
-
+        
         const reward = calculateReward(
           { totalVolume: actualTotalVolume },
           { totalVolume: plannedTotalVolume }
@@ -271,7 +273,7 @@ export const updateWorkout = async ({
           performance.setRatio
         ];
         bandit.updateModel(action, context, reward);
-
+        
         plannedDocuments.push({
           day: plannedExercise.day,
           userId,
@@ -288,6 +290,7 @@ export const updateWorkout = async ({
       }
 
       await plannedExercise.insertMany(plannedDocuments);
+      await bandit.save(userId); // Persist updated model
     }
 
     return actualResults ? true : false;
@@ -310,27 +313,23 @@ export const generateTestingPlan = async ({ userId }: GetWorkoutListParams): Pro
   const user = await User.findById(userId);
   if (!user) throw new Error("User not found");
 
-  const { experienceLevel, workoutDays, fitnessGoal } = user;
-  console.log("User Info:", user);
-  console.log("Experience Level:", experienceLevel); 
-  console.log("Workout Days:", workoutDays);
-  console.log("Fitness Goal:", fitnessGoal);
+  const { fitnessLevel, daysPerWeek, goal } = user;
   // Filter by experience level
   let filteredExercises: any[] = [];
-  if (experienceLevel === "beginner") {
+  if (fitnessLevel === "beginner") {
     filteredExercises = csvExercises.filter(ex => ex.difficulty.toLowerCase() === "beginner");
-  } else if (experienceLevel === "medium") {
+  } else if (fitnessLevel === "intermediate") {
     filteredExercises = csvExercises.filter(ex => {
       const d = ex.difficulty.toLowerCase();
       return d === "intermediate" || d === "beginner";
     });
-  } else if (experienceLevel === "pro") {
+  } else if (fitnessLevel === "advanced") {
     filteredExercises = csvExercises;
   }
 
   // If fat_loss, filter exercises by caloriesBurn
-  let exercisesPerDay = fitnessGoal === "fat_loss" ? 3 : 4;
-  if (fitnessGoal === "fat_loss") {
+  let exercisesPerDay = goal === "fat_loss" ? 3 : 4;
+  if (goal === "fat_loss") {
     filteredExercises = filteredExercises.filter(ex => {
       const burn = ex.caloriesBurn?.toLowerCase?.();
       return burn === "medium" || burn === "high";
@@ -347,7 +346,7 @@ export const generateTestingPlan = async ({ userId }: GetWorkoutListParams): Pro
   shuffleArray(filteredExercises);
   console.log("filteredExercises Goal:", filteredExercises);
   // Check if enough unique exercises exist
-  const totalRequired = workoutDays * exercisesPerDay;
+  const totalRequired = (daysPerWeek ?? 0) * exercisesPerDay;
   if (filteredExercises.length < totalRequired) {
     throw new Error("Not enough unique exercises to generate a complete plan without duplicates.");
   }
@@ -357,7 +356,7 @@ export const generateTestingPlan = async ({ userId }: GetWorkoutListParams): Pro
   const usedExerciseNames = new Set<string>();
   let exerciseIndex = 0;
 
-  for (let day = 1; day <= workoutDays; day++) {
+  for (let day = 1; day <= (daysPerWeek ?? 0); day++) {
     const dayPlan: TestingPlan = {
       Day: `${day}`,
       Exercises: []
