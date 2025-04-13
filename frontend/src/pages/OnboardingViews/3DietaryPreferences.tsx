@@ -42,11 +42,6 @@ export default function DietaryPreferences({ onNext }: DietaryPreferencesProps) 
       allPreferences.push(trimmedOther);
     }
 
-    if (allPreferences.length === 0) {
-      alert("Please select at least one dietary preference.");
-      return;
-    }
-
     onNext(allPreferences);
   };
 

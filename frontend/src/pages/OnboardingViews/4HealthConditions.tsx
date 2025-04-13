@@ -42,11 +42,6 @@ export default function HealthConditions({ onNext }: HealthConditionsProps) {
       allConditions.push(trimmedOther);
     }
 
-    if (allConditions.length === 0) {
-      alert("Please select at least one health condition.");
-      return;
-    }
-
     onNext(allConditions);
   };
 

@@ -57,7 +57,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userData", JSON.stringify(response.data.userData));
       //localStorage.setItem("userData",JSON.parse(response.data));
-      const data = JSON.stringify(response.data);
+      //const data = JSON.stringify(response.data);
 
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
@@ -107,7 +107,6 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
                 onChange={handleFormData}
               />
               <div
-                type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2"
               >

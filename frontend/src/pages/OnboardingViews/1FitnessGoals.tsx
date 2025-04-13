@@ -17,9 +17,7 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
 
   const fitnessGoals = [
     { label: "Fat Loss", value: "fat_loss", icon: "🔥" },
-    { label: "Muscle Gain", value: "muscle_gain", icon: "💪" },
-    { label: "Maintain Weight", value: "maintain_weight", icon: "⚖️" },
-    { label: "Improve Endurance", value: "improve_endurance", icon: "🏃" },
+    { label: "Muscle Gain", value: "muscle_gain", icon: "💪" }
   ];
 
   const handleNext = () => {
@@ -56,9 +54,9 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-5">
+      <div className="grid grid-cols-2 gap-8 mb-6">
         {fitnessGoals.map((goal) => (
-          <button
+          <div
             key={goal.value}
             onClick={() => setSelectedGoal(goal.value)}
             className={`rounded-2xl shadow-md px-4 py-4 text-center transition-all duration-200 ${
@@ -69,7 +67,7 @@ export default function FitnessGoals({ onNext }: FitnessGoalsProps) {
           >
             <div className="text-4xl mb-2">{goal.icon}</div>
             <div className="font-semibold">{goal.label}</div>
-          </button>
+          </div>
         ))}
       </div>
 

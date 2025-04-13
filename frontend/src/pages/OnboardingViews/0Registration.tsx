@@ -139,7 +139,6 @@ export default function Registration({ onNext, onViewChange }: RegistrationProps
           onChange={handleFormData}
         />
         <div
-          type="button"
           onClick={() => setShowPassword(!showPassword)}
           className="absolute right-4 top-1/2 transform -translate-y-1/2"
         >
