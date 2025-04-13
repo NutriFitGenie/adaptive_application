@@ -25,6 +25,7 @@ interface OnboardingData {
   goal?: string;
   fitnessLevel?: string;
   daysPerWeek?: number;
+  targetWeight?: number;
   weight?: number;
   height?: number;
   neck?: number;
@@ -58,22 +59,19 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
       // 3. Navigate to the dashboard
       onViewChange("dashboard");
     } catch (error) {
-        console.error("Unexpected Error:", error);
-        alert("Registration failed, Please try again.");
-
+      console.error("Unexpected Error:", error);
+      alert("Registration failed, Please try again.");
     }
-
-    onViewChange("dashboard");
   };
 
   const renderStep = () => {
     switch (step) {
       case 0:
-        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />
+        return <Registration onNext={(data) => handleNext(data)} onViewChange={onViewChange} />;
       case 1:
         return <FitnessGoals onNext={(data) => handleNext(data)} />;
       case 2:
-        return <BodyMetrics onNext={(data) => handleNext(data)} />;
+        return <BodyMetrics onNext={(data) => handleNext(data)} units={onboardingData.units || "metric"} />;
       case 3:
         return <DietaryPreferences onNext={(data) => handleNext({ dietaryPreferences: data })} />;
       case 4:

@@ -10,6 +10,7 @@ export interface IUser extends Document {
   goal?: string;
   fitnessLevel?: string;
   daysPerWeek?: number;
+  targetWeight?: number;
   weight?: number;
   height?: number;
   neck?: number;
@@ -54,6 +55,7 @@ const UserSchema: Schema = new Schema(
     goal: { type: String },
     fitnessLevel: { type: String },
     daysPerWeek: { type: Number },
+    targetWeight: { type: Number },
     weight: { type: Number },
     height: { type: Number },
     neck: { type: Number },

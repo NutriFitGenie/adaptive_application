@@ -26,6 +26,9 @@ export const createUserController = async (req: Request, res: Response): Promise
       gender,
       goal,
       daysPerWeek,
+      targetWeight,
+      weight,
+      height,
       neck,
       waist,
       units,
@@ -47,8 +50,8 @@ export const createUserController = async (req: Request, res: Response): Promise
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const userData = {
-      firstName,              
-      lastName,                     
+      firstName,
+      lastName,
       age,
       gender,
       email,
@@ -58,13 +61,14 @@ export const createUserController = async (req: Request, res: Response): Promise
       waist,
       units,
       healthConditions,
-      fitnessLevel,                
+      fitnessLevel,
       activityLevel,
       daysPerWeek,
+      targetWeight,
       weight,
       height,
       dietaryPreferences: typeof dietaryPreferences === 'string'
-          ? (dietaryPreferences.trim() !== "" 
+          ? (dietaryPreferences.trim() !== ""
                 ? dietaryPreferences.split(',').map((s: string) => s.trim())
                 : [])
           : (Array.isArray(dietaryPreferences) ? dietaryPreferences : []),
@@ -112,7 +116,7 @@ export const createUserController = async (req: Request, res: Response): Promise
       { expiresIn: config.JWT_TOKEN_EXPIRE as string }
     );
 
-    
+
     res.status(201).json({message: 'User registered successfully', token, user: newUser});
   } catch (error) {
     console.error("Error storing user:", error);
@@ -133,7 +137,7 @@ export const loginUserController = async (req: Request, res: Response): Promise<
     if (!getUser) {
       return res.status(400).json({ message: 'User not found.' });
     }
-    
+
     const isMatch = await bcrypt.compare(password, getUser.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid password.' });

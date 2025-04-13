@@ -11,8 +11,14 @@ import FoodProgress from "./DashBoardViews/FoodProgress";
 import dataStore from "../data/dataStore"; // Global data store object
 import "../styles/dashboard.css"; // Import the CSS
 
-// List of valid sub-view names in the Dashboard. Added "foodProgress".
-type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "setting" | "foodProgress";
+import Logo from "../assets/Logo.svg"; // Logo for the sidebar
+
+import { FaHome, FaHistory } from "react-icons/fa";
+import { LuDumbbell, LuWheat } from "react-icons/lu";
+import { GiProgression } from "react-icons/gi";
+
+// List of valid sub-view names in the Dashboard
+type DashboardView = "home" | "workouts" | "nutrition" | "progress" | "history" | "foodProgress";
 
 interface DashboardProps {
   apiBase: string;
@@ -21,12 +27,45 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
-  // Retrieve the saved view from localStorage; default to "home" if not found.
-  const savedView = (localStorage.getItem("dashboardView") as DashboardView) || "home";
+const sidebarItems = [
+  {
+    label: "Home",
+    value: "home",
+    icon: <FaHome className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Workouts",
+    value: "workouts",
+    icon: <LuDumbbell className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Nutrition",
+    value: "nutrition",
+    icon: <LuWheat className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "Progress",
+    value: "progress",
+    icon: <GiProgression className="text-3xl primaryColor1" />,
+  },
+  {
+    label: "History",
+    value: "history",
+    icon: <FaHistory className="text-3xl primaryColor1" />,
+  },
+    {
+      label: "Food Progress",
+      value: "foodProgress",
+      icon: <GiProgression className="text-3xl primaryColor1" />,
+    }
+]
+
+const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
+  // On mount, try to get the saved view from localStorage; default to "home" if not found.
+  const savedView = localStorage.getItem("dashboardView") as DashboardView || "home";
   const [view, setView] = useState<DashboardView>(savedView);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
-  
+
   // Retrieve userData from localStorage and parse it.
   const userData = localStorage.getItem("userData");
   const parsedUserData = userData ? JSON.parse(userData) : null;
@@ -85,16 +124,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-top">
-          <div className="logo">NutriFitGenie</div>
-          <nav className="nav-items">
-            <button onClick={() => changeView("home")}>Home</button>
-            <button onClick={() => changeView("workouts")}>Workouts</button>
-            <button onClick={() => changeView("nutrition")}>Nutrition</button>
-            <button onClick={() => changeView("progress")}>Progress</button>
-            <button onClick={() => changeView("history")}>History</button>
-            <button onClick={() => changeView("setting")}>Setting</button>
-            {/* New tab for FoodProgress */}
-            <button onClick={() => changeView("foodProgress")}>Food Progress</button>
+          <div className="flex items-center logo">
+            <img
+                src={Logo}
+                alt="Logo"
+                className="h-16 w-16"
+            />
+            <div className="ml-3 secondaryText">NutriFitGenie</div>
+          </div>
+          <nav className="flex flex-col items-center nav-items textLight">
+            {sidebarItems.map((item) => {
+              const isActive = view === item.value;
+              return (
+                <div
+                  key={item.value}
+                  onClick={() => changeView(item.value as DashboardView)}
+                  className={`flex items-center gap-3 w-full px-4 py-2 my-2 rounded-full transition-colors ${
+                    isActive ? "primaryColor2BG" : "hover:bg-[var(--primaryColor2)]"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center background">
+                    {item.icon}
+                  </div>
+                  <span className="text-base font-medium">{item.label}</span>
+                </div>
+              );
+            })}
           </nav>
         </div>
         <button className="logout-btn" onClick={handleLogout}>
@@ -104,35 +159,27 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
 
       {/* Main Content */}
       <main className="main-content">
-        {/* Top Bar */}
-        <div className="top-bar flex items-center justify-between p-4 bg-gray-100">
+        {/* Updated Top Bar */}
+        <div className="top-bar flex items-center justify-between p-4">
+          {/* Left: Hamburger button (visible on mobile) */}
           <div className="flex items-center">
             <button className="hamburger-btn mr-4 md:hidden" onClick={toggleSidebar}>
               &#9776;
             </button>
             <div className="hidden md:block">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <div className="titleText font-bold primaryColor1">
                 Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-              </h2>
-              <p className="text-sm text-gray-600">{fullFormattedDate}</p>
+              </div>
+              <p className="text-sm secondaryColor">{fullFormattedDate}</p>
             </div>
           </div>
 
           <div className="block md:hidden text-center flex-grow">
-            <h2 className="text-lg font-bold text-black">
+            <div className="titleText font-bold primaryColor1">
               Welcome, {parsedUserData ? parsedUserData.firstName : "User"}!
-            </h2>
-            <p className="text-xs text-black">{fullFormattedDate}</p>
+            </div>
+            <p className="text-xs secondaryColor">{fullFormattedDate}</p>
           </div>
-
-          {view !== "home" && (
-            <button 
-              onClick={handleBack} 
-              className="back-btn flex items-center justify-center rounded-full bg-primaryColor1 w-10 h-10 text-white shadow-md"
-            >
-              &larr;
-            </button>
-          )}
         </div>
 
         {/* Render the selected view */}
@@ -146,16 +193,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, user }) => {
         {view === "workouts" && <Workouts onViewChange={changeView} />}
         {view === "nutrition" && (
           <Nutrition
-            apiBase="http://localhost:3000" 
+            apiBase="http://localhost:3000"
             token={parsedUserData ? parsedUserData.token : ""}
             userId={parsedUserData ? parsedUserData._id : ""}
           />
         )}
         {view === "progress" && <Progress onViewChange={changeView} />}
         {view === "history" && <History onViewChange={changeView} />}
-        {view === "setting" && <Setting />}
-        {/* Render the new FoodProgress view */}
-        {view === "foodProgress" && <FoodProgress 
+        {view === "foodProgress" && <FoodProgress
             token={parsedUserData ? parsedUserData.token : ""}
             userId={parsedUserData ? parsedUserData._id : ""}   />}
       </main>

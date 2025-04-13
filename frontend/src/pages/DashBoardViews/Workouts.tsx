@@ -186,7 +186,7 @@ const WorkoutDashboard: React.FC = () => {
             </div>
           ))}
         </div>
-        <button onClick={handleSubmitTesting} className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button onClick={handleSubmitTesting} className="mt-6 primaryColor1BG text-white px-4 py-2 rounded cursor-pointer">
           Submit Testing Week
         </button>
       </div>
@@ -210,14 +210,14 @@ const WorkoutDashboard: React.FC = () => {
           .sort((a, b) => parseInt(a) - parseInt(b))
           .map((day, idx) => (
             <div key={day} className="mb-8 bg-white border border-gray-200 rounded-md shadow-sm p-4">
-              <h3 className="text-xl font-semibold text-gray-700 mb-3">{`Workout ${idx + 1} (Day ${day})`}</h3>
+              <h3 className="text-xl font-semibold primaryColor1 mb-3">{`Workout ${idx + 1} (Day ${day})`}</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 table-auto">
-                  <thead className="bg-blue-700">
+                  <thead className="primaryColor1BG">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Exercise</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Weight (KG)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Reps</th>
+                      <th className="px-6 py-3 text-middle text-xs font-medium text-white uppercase tracking-wider">Exercise</th>
+                      <th className="px-6 py-3 text-middle text-xs font-medium text-white uppercase tracking-wider">Weight (KG)</th>
+                      <th className="px-6 py-3 text-middle text-xs font-medium text-white uppercase tracking-wider">Reps</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -225,7 +225,7 @@ const WorkoutDashboard: React.FC = () => {
                       const repsString = `${ex.set1Reps} / ${ex.set2Reps} / ${ex.set3Reps}`;
                       return (
                         <tr key={ex._id} className="hover:bg-gray-100">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm secondaryColor">
                             <div>{ex.name}</div>
                             <a
                               href={`https://www.youtube.com/results?search_query=how+to+do+${encodeURIComponent(ex.name)}`}
@@ -236,8 +236,8 @@ const WorkoutDashboard: React.FC = () => {
                               How to Do: Link
                             </a>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{ex.weight}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repsString}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm secondaryColor">{ex.weight}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm secondaryColor">{repsString}</td>
                         </tr>
                       );
                     })}

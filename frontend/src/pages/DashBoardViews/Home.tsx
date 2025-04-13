@@ -95,10 +95,10 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
 
   return (
     <>
-      <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="App dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today's Workout Plan Card */}
         <div className="plan-card workout-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h2 className="text-2xl font-bold mb-4">Workout Plan for {currentDay}</h2>
+          <h2 className="text-2xl font-bold mb-4 primaryColor1">Workout Plan for {currentDay}</h2>
           {loadingWorkout ? (
             <p>Loading workout plan...</p>
           ) : workoutError ? (
@@ -107,11 +107,11 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
             currentWorkout.map((exercise) => (
               <div key={exercise._id} className="mb-4">
                 <h3 className="text-xl font-semibold">{exercise.name}</h3>
-                {exercise.description && <p>{exercise.description}</p>}
-                <ul className="list-disc ml-5">
-                  <li>Category: {exercise.category}</li>
-                  <li>Weight: {exercise.weight} KG</li>
-                </ul>
+                {exercise.description && <p className="underline">{exercise.description}</p>}
+                <div className="list-disc ml-5">
+                  <div>Category: {exercise.category}</div>
+                  <div>Weight: {exercise.weight} KG</div>
+                </div>
               </div>
             ))
           ) : (
@@ -135,10 +135,10 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
 
         {/* Today's Meal Plan Card */}
         <div className="plan-card bg-white border border-gray-200 rounded-md shadow-sm p-4">
-          <h3 className="text-2xl font-bold mb-4">Meal Plan for {currentDay}</h3>
+          <h2 className="text-2xl font-bold mb-4 primaryColor1">Meal Plan for {currentDay}</h2>
           {planData && planData.mealPlans && planData.mealPlans.length > 0 ? (
             planData.mealPlans.map((mp: any, i: number) => (
-              <div key={i} className="mb-3">
+              <div key={i} className="mb-4">
                 <p className="text-base">
                   <strong>{mp.mealType}</strong>: {mp.description} ({mp.calories} cal)
                 </p>
@@ -147,8 +147,12 @@ const Home: React.FC<HomeProps> = ({ planData, currentDay, onViewChange }) => {
           ) : (
             <p>No meal plan available for {currentDay}.</p>
           )}
-          <div className="workout-actions mt-4 flex gap-2">
-            <button className="view-complete-meal px-4 py-2 bg-primaryColor1 text-white rounded-md">
+          <div className="workout-actions mt-8 flex gap-2">
+            <button 
+              className="view-complete-meal px-4 py-2 bg-primaryColor1 text-white rounded-md"
+              onClick={() => {
+                onViewChange("nutrition")}}
+            >
               View Complete Meal
             </button>
             <button className="start-meal px-4 py-2 bg-primaryColor2 text-white rounded-md">

@@ -138,8 +138,7 @@ export default function Registration({ onNext, onViewChange }: RegistrationProps
           value={formData.password}
           onChange={handleFormData}
         />
-        <button
-          type="button"
+        <div
           onClick={() => setShowPassword(!showPassword)}
           className="absolute right-4 top-1/2 transform -translate-y-1/2"
         >
@@ -148,7 +147,7 @@ export default function Registration({ onNext, onViewChange }: RegistrationProps
           ) : (
             <Eye className="w-5 h-5 secondaryColor cursor-pointer" />
           )}
-        </button>
+        </div>
       </div>
 
       <div className="mb-6 text-center">
@@ -162,12 +161,12 @@ export default function Registration({ onNext, onViewChange }: RegistrationProps
 
       <div className="text-center miniText">
         <span className="secondaryColor">Already have an account?</span>
-        <button
+        <span
           className="primaryColor1 ml-1 hover:underline cursor-pointer"
           onClick={() => onViewChange("login")}
         >
           Log In
-        </button>
+        </span>
       </div>
     </div>
   );

@@ -45,10 +45,10 @@ const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
 
   return (
     <div className="App flex justify-center">
-      <div className="w-full max-w-4xl mt-8">
+      <div className="w-full mt-8">
         {/* Responsive and aligned header */}
-        <div className="bg-gray-800 text-white text-center py-6 rounded-t-lg shadow-md">
-          <h2 className="text-2xl md:text-3xl font-bold">Workout Progress Tracker</h2>
+        <div className="primaryColor1BG text-white text-center py-6 rounded-t-lg shadow-md">
+          <h2 className="text-2xl md:text-3xl font-bold">Workout History</h2>
           <p className="text-sm md:text-base mt-1">Your Weekly Performance History</p>
         </div>
 
@@ -66,13 +66,13 @@ const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
                   <table className="min-w-full divide-y divide-gray-200 table-auto">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Week</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Weight (kg)</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Weight (kg)</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Sets</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Sets</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance Ratio</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Week</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Planned Weight (kg)</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Actual Weight (kg)</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Planned Sets</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Actual Sets</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Performance Ratio</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Performance</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
