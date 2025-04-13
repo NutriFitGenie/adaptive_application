@@ -24,6 +24,7 @@ export const createUserController = async (req: Request, res: Response): Promise
       age,
       gender,
       height,
+      targetWeight,
       weight,
       activityLevel,
       dietaryPreferences,
@@ -41,6 +42,7 @@ export const createUserController = async (req: Request, res: Response): Promise
         age: Number(age),
         gender,
         height: Number(height),
+        weight: Number(weight),
         activityLevel
       },
       preferences: {
@@ -50,7 +52,7 @@ export const createUserController = async (req: Request, res: Response): Promise
       },
       fitnessGoals: {
         goal: fitnessGoal,
-        targetWeight: Number(weight),
+        targetWeight: Number(targetWeight),
         weeklyCommitment: 3
       },
       nutritionalRequirements: {
@@ -87,7 +89,7 @@ export const createUserController = async (req: Request, res: Response): Promise
       }
     });
     
-    res.status(201).json({ token, user: newUser });
+    res.status(201).json({ token, user: newUser});
 
   } catch (error) {
     console.error("Error storing user:", error);

@@ -22,7 +22,7 @@ export interface IUser extends Document {
     timeframeWeeks: number;
   };
   nutritionalRequirements: {
-    bmr: number;
+    bmr?: number;
     tdee: number;
     dailyCalories: number;
     protein: number;

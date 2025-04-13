@@ -10,6 +10,7 @@ export interface IDailyPlan {
 export interface IWeeklyPlan extends Document {
   user: Schema.Types.ObjectId;
   weekNumber: number;
+  weekStart: Date;
   dailyPlans: IDailyPlan[];
   totalCalories: number;
   completed: boolean;
@@ -18,6 +19,7 @@ export interface IWeeklyPlan extends Document {
 const WeeklyPlanSchema = new Schema<IWeeklyPlan>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   weekNumber: { type: Number, required: true },
+  weekStart: { type: Date, default: Date.now },
   dailyPlans: [{
     day: { type: String, required: true },
     mealIds: [{ 
@@ -41,3 +43,4 @@ WeeklyPlanSchema.virtual('dailyMeals', {
 WeeklyPlanSchema.set('toObject', { virtuals: true });
 WeeklyPlanSchema.set('toJSON', { virtuals: true });
 export default model<IWeeklyPlan>('WeeklyPlan', WeeklyPlanSchema);
+

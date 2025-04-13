@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { createWeeklyPlan, getWeeklyPlansByUser, getWeeklyProgressByUser, submitWeeklyProgress } from '../controllers/weeklyUpdatesController';
+import { getUpdatedPlan } from '../controllers/weeklyUpdatesController';
 
 const router = Router();
 
-router.post('/weeklyplan', createWeeklyPlan);
-router.get('/weeklyplan/:userId', getWeeklyPlansByUser);
-router.post('/weeklyprogress', submitWeeklyProgress);
-router.get('/weeklyprogress/:userId', getWeeklyProgressByUser);
+// router.post('/weeklyplan', createWeeklyPlan);
+// router.get('/weeklyplan/:userId', getWeeklyPlansByUser);
+// router.post('/weeklyprogress', submitWeeklyProgress);
+router.post('/weeklyprogress/:userId', getUpdatedPlan);
 
 export default router;
