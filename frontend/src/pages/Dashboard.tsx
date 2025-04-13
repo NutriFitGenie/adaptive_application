@@ -126,26 +126,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             />
             <div className="ml-3 secondaryText">NutriFitGenie</div>
           </div>
-          <nav className="flex flex-col items-center nav-items">
+          <nav className="flex flex-col items-center nav-items textLight">
             {sidebarItems.map((item) => {
               const isActive = view === item.value;
               return (
-                <button
+                <div
                   key={item.value}
                   onClick={() => changeView(item.value as DashboardView)}
                   className={`flex items-center gap-3 w-full px-4 py-2 my-2 rounded-full transition-colors ${
-                    isActive ? "bg-primaryColor1 text-white" : "text-gray-800 hover:bg-gray-200"
+                    isActive ? "primaryColor2BG" : "hover:bg-[var(--primaryColor2)]"
                   }`}
                 >
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      isActive ? "bg-white text-primaryColor1" : "bg-gray-100 text-primaryColor1"
-                    }`}
-                  >
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center background">
                     {item.icon}
                   </div>
                   <span className="text-base font-medium">{item.label}</span>
-                </button>
+                </div>
               );
             })}
           </nav>

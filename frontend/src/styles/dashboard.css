@@ -1,5 +1,3 @@
-/* dashboard.css */
-
 /* Container that holds the sidebar and main content */
 .dashboard-container {
   display: flex;
@@ -57,7 +55,7 @@
 }
 
 .nav-items button {
-  background: none;
+  background-color: var(--primaryColor1);
   border: none;
   color: var(--textLight);
   width: 100%;

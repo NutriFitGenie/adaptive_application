@@ -66,13 +66,13 @@ const History: React.FC<WorkoutProps> = ({ onViewChange }) => {
                   <table className="min-w-full divide-y divide-gray-200 table-auto">
                     <thead className="bg-gray-100">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Week</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Weight (kg)</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Weight (kg)</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Planned Sets</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Actual Sets</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance Ratio</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Performance</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Week</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Planned Weight (kg)</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Actual Weight (kg)</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Planned Sets</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Actual Sets</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Performance Ratio</th>
+                        <th className="px-6 py-3 text-middle text-xs font-medium text-black uppercase tracking-wider">Performance</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
