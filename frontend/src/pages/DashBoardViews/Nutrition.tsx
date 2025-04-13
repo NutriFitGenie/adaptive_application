@@ -1,85 +1,82 @@
+// src/pages/DashBoardViews/Nutrition.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface RecommendationProps {
+interface NutritionProps {
   apiBase: string;
   token: string;
+  userId: string; // Logged-in user's _id
 }
 
-const Recommendation: React.FC<RecommendationProps> = ({ apiBase, token }) => {
+const Nutrition: React.FC<NutritionProps> = ({ apiBase, token, userId }) => {
   const [weeklyPlan, setWeeklyPlan] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Function to refresh the weekly plan by calling the backend API.
+  const refreshPlan = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      // Endpoint expects the URL format: /api/food-recommender/<userId>
+      const response = await axios.get(`${apiBase}/api/food-recommender/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Depending on your API response structure, either response.data.weeklyPlan or response.data contains the plan.
+      setWeeklyPlan(response.data.weeklyPlan || response.data);
+    } catch (error) {
+      console.error("Error refreshing plan:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchWeeklyPlan = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${apiBase}/api/users/current/weekly-plan`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setWeeklyPlan(res.data);
-      } catch (error) {
-        console.error('Error fetching weekly plan:', error);
-      }
-      setLoading(false);
-    };
+    refreshPlan();
+  }, [apiBase, token, userId]);
 
-    fetchWeeklyPlan();
-  }, [apiBase, token]);
-
-  const formatNutrition = (nutrition: any) => {
-    return `${nutrition.calories}kcal | P:${nutrition.protein}g C:${nutrition.carbs}g F:${nutrition.fats}g`;
+  // Helper to format nutritional info string.
+  const formatNutrition = (nutrition: any): string => {
+    if (!nutrition) return 'No info';
+    return `${nutrition.calories} kcal | P: ${nutrition.protein}g, C: ${nutrition.carbs}g, F: ${nutrition.fats}g`;
   };
+
+  // Helper to capitalize a string.
+  const capitalize = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
   return (
     <div className="nutrition-container">
       <h3>Your Weekly Nutrition Plan</h3>
-      <button onClick={setWeeklyPlan} disabled={loading}>
+      <button onClick={refreshPlan} disabled={loading}>
         {loading ? 'Refreshing...' : 'Refresh Plan'}
       </button>
 
-      {weeklyPlan && (
+      {weeklyPlan ? (
         <div className="weekly-plan">
           <div className="plan-summary">
             <h4>Total Weekly Calories: {weeklyPlan.totalCalories}</h4>
-            <p>Average Daily: {(weeklyPlan.totalCalories / 7).toFixed(0)}kcal</p>
+            <p>Average Daily: {(weeklyPlan.totalCalories / 7).toFixed(0)} kcal</p>
           </div>
-
           {weeklyPlan.dailyPlans.map((day: any) => (
             <div key={day.day} className="day-plan">
-              <h4>{day.day.charAt(0).toUpperCase() + day.day.slice(1)}</h4>
-              
-              <div className="meal-card">
-                <h5>Breakfast</h5>
-                <p className="recipe-name">{day.meals.breakfast.name}</p>
-                <p className="nutrition-info">
-                  {formatNutrition(day.meals.breakfast.nutritionalInfo)}
-                </p>
-              </div>
-
-              <div className="meal-card">
-                <h5>Lunch</h5>
-                <p className="recipe-name">{day.meals.lunch.name}</p>
-                <p className="nutrition-info">
-                  {formatNutrition(day.meals.lunch.nutritionalInfo)}
-                </p>
-              </div>
-
-              <div className="meal-card">
-                <h5>Dinner</h5>
-                <p className="recipe-name">{day.meals.dinner.name}</p>
-                <p className="nutrition-info">
-                  {formatNutrition(day.meals.dinner.nutritionalInfo)}
-                </p>
-              </div>
+              <h4>{capitalize(day.day)}</h4>
+              {day.mealIds && day.mealIds.length > 0 ? (
+                day.mealIds.map((recipe: any) => (
+                  <div key={recipe._id} className="meal-card">
+                    <h5>{recipe.mealType ? capitalize(recipe.mealType) : 'Meal'}</h5>
+                    <p className="recipe-name">{recipe.name || 'No name available'}</p>
+                    <p className="nutrition-info">{formatNutrition(recipe.nutritionalInfo)}</p>
+                  </div>
+                ))
+              ) : (
+                <p>No meals for this day.</p>
+              )}
             </div>
           ))}
         </div>
+      ) : (
+        <p>No weekly plan found.</p>
       )}
     </div>
   );
 };
 
-export default Recommendation;
+export default Nutrition;

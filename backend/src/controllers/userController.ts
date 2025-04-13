@@ -97,11 +97,6 @@ export const createUserController = async (req: Request, res: Response): Promise
       throw new Error('JWT_SECRET is not defined in environment variables');
     }
 
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.email },
-      config.JWT_SECRET as jwt.Secret,
-      { expiresIn: config.JWT_TOKEN_EXPIRE as string }
-    );
     setImmediate(async () => {
       try {
          await RecommenderEngine.generateWeeklyPlan((newUser._id as String).toString());
@@ -110,6 +105,13 @@ export const createUserController = async (req: Request, res: Response): Promise
         console.error('Background plan generation failed:', err);
       }
     });
+
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email },
+      config.JWT_SECRET as jwt.Secret,
+      { expiresIn: config.JWT_TOKEN_EXPIRE as string }
+    );
+
     
     res.status(201).json({message: 'User registered successfully', token, user: newUser});
   } catch (error) {

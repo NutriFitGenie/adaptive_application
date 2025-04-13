@@ -155,8 +155,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           />
         )}
         {view === "workouts" && <Workouts onViewChange={onViewChange} />}
-        {view === "nutrition" && <Nutrition />}
-        {view === "progress" && <Progress onViewChange={onViewChange} />}
+        {view === "nutrition" && (
+          <Nutrition
+            apiBase="http://localhost:3000"  // or the appropriate API base URL
+            token={parsedUserData ? parsedUserData.token : ""}
+            userId={parsedUserData ? parsedUserData._id : ""}
+          />
+        )}        {view === "progress" && <Progress onViewChange={onViewChange} />}
         {view === "history" && <History onViewChange={onViewChange} />}
         {view === "setting" && <Setting />}
       </main>

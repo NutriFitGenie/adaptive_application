@@ -9,33 +9,12 @@ import WeeklyPlan from '../models/WeeklyPlan';
 
 export const getRecommendations = async (req: Request, res: Response):Promise<any> => {
   try {
-    const user = await User.findById(req.params.userId)
-      .populate({
-        path: 'weeklyPlans',
-        populate: {
-          path: 'dailyPlans.mealIds',
-          model: 'Recipe'
-        }
-      });
-
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // Force new plan generation if none exists
-      await RecommenderEngine.generateWeeklyPlan((user._id as string).toString());
-      await user.save();
-
-    // Fetch updated user with populated plan
-    const updatedUser = await User.findById(user._id)
-      .populate({
-        path: 'weeklyPlans',
-        populate: {
-          path: 'dailyPlans.mealIds',
-          model: 'Recipe'
-        }
-      });
-
+    const plan = await WeeklyPlan.findOne({ user: req.params.userId });
+      console.log('Weekly Plan:', plan);
+      
+    if (plan) return res.status(404).json({ error: 'User not found' });
     res.json({
-      // weeklyPlan: updatedUser?.weeklyPlans[0],
+      plan:plan
       // nutritionalRequirements: updatedUser?.nutritionalRequirements
       
     });
