@@ -93,13 +93,14 @@ export const createUserController = async (req: Request, res: Response): Promise
     await newUser.save();
     console.log('User created:', newUser);
 
+    if (!config.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not defined in environment variables');
+    }
 
-    
-    // Generate JWT token
     const token = jwt.sign(
-      { userId: newUser._id },
-      config.JWT_SECRET as string,
-      { expiresIn: '7d' }
+      { id: newUser._id, email: newUser.email },
+      config.JWT_SECRET as jwt.Secret,
+      { expiresIn: config.JWT_TOKEN_EXPIRE as string }
     );
     setImmediate(async () => {
       try {
@@ -110,7 +111,7 @@ export const createUserController = async (req: Request, res: Response): Promise
       }
     });
     
-    res.status(201).json({ token, user: newUser});
+    res.status(201).json({message: 'User registered successfully', token, user: newUser});
   } catch (error) {
     console.error("Error storing user:", error);
     res.status(500).json({ error: 'Error creating user' });
